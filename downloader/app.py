@@ -18,7 +18,9 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import yt_dlp
-from flask import Flask, jsonify, request, send_file
+import hmac
+
+from flask import Flask, Response, jsonify, request, send_file
 
 HERE = Path(__file__).parent
 HAS_FFMPEG = shutil.which("ffmpeg") is not None
@@ -75,6 +77,19 @@ def quality_options(formats):
 
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
 app = Flask(__name__)
+
+# When hosted as a public website, set GRAB_PASSWORD so only you can use it.
+PASSWORD = os.environ.get("GRAB_PASSWORD", "")
+
+
+@app.before_request
+def require_password():
+    if not PASSWORD:
+        return None
+    auth = request.authorization
+    if auth and hmac.compare_digest(auth.password or "", PASSWORD):
+        return None
+    return Response("Password required.", 401, {"WWW-Authenticate": 'Basic realm="Grab"'})
 
 
 class BadRequest(Exception):

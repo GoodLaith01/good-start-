@@ -50,3 +50,19 @@ yt-dlp. The start scripts already do this every time you launch Grab, or you can
 Private videos and videos that need a login can't be downloaded. Only download videos
 you have the right to save, such as your own uploads, content with a free licence, or
 personal offline viewing where the platform's terms allow it.
+
+## Put it online as your own website (free)
+
+The `Dockerfile` makes Grab a website that any Docker host can run. Example with
+[Render](https://render.com) (free plan):
+
+1. Sign up at render.com with your GitHub account.
+2. **New → Web Service**, then pick the `good-start-` repository.
+3. Set **Branch** to `claude/game-recognition-f0udzd` and **Root Directory** to `downloader`. Render detects the Dockerfile.
+4. Under **Environment**, add `GRAB_PASSWORD` with a password of your choice. Your browser asks for it the first time you open the site; any username works.
+5. Click **Create Web Service**. After a few minutes you get your own address, like `https://grab-xxxx.onrender.com`.
+
+Notes:
+- Free plans sleep when idle, so the first visit after a break takes about 30–60 seconds to wake up.
+- YouTube often blocks downloads from cloud servers ("confirm you're not a bot"). TikTok, Instagram, X, Facebook and most other sites usually work from a server. YouTube works reliably when Grab runs on your own computer.
+- Keep the password set. An open downloader on the internet gets found and abused, and that uses up your free plan.
