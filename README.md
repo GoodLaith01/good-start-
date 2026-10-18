@@ -16,6 +16,7 @@ cd game
 python3 rainbow_tower.py --level 1        # play interactively (moves like AC)
 python3 player.py                         # watch Claude solve every level
 python3 -m unittest test_solvers          # solvers vs brute-force search
+# or open index.html in a browser to watch Claude play move by move
 ```
 
 What solving it taught: `.claude/skills/recursive-puzzle-solving/SKILL.md`.

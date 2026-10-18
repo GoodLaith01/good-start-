@@ -1,0 +1,506 @@
+<title>Rainbow Tower</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a dark toy-shelf stage on the left, Claude's notebook (controls, thinking, move log) on the right; stacks on phones. */
+:root {
+  --bg: #120f0c;
+  --panel: #1c1813;
+  --line: #2f2920;
+  --fg: #f3ece0;
+  --muted: #a89d8b;
+  --accent: #f6b84b;
+  --good: #8fd16a;
+  --bad: #ff7a5c;
+  --wood: #b08a5e;
+  --font-display: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 32px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 20px; }
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(30px, 5vw, 46px); line-height: 1; margin: 0; letter-spacing: -0.01em; }
+h1 span { background: linear-gradient(90deg, #ef6b4a, #f3a64a, #e9d36a, #a6d86e, #59c7e0, #6f8ff0); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.sub { color: var(--muted); margin: 6px 0 0; max-width: 60ch; }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tab { font: 600 14px var(--font-body); color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; cursor: pointer; }
+.tab[aria-pressed="true"] { color: var(--bg); background: var(--accent); border-color: var(--accent); }
+.tab:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
+@media (max-width: 860px) { .main { grid-template-columns: minmax(0, 1fr); } }
+.stage { background: radial-gradient(120% 90% at 50% 0%, #1d1912 0%, var(--bg) 70%); border: 1px solid var(--line); border-radius: 18px; padding: 14px; min-width: 0; }
+canvas { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; max-width: 100%; cursor: pointer; touch-action: manipulation; }
+.stats { display: flex; flex-wrap: wrap; gap: 8px 22px; padding: 10px 6px 2px; font-variant-numeric: tabular-nums; }
+.stat b { display: block; font: 800 22px/1.1 var(--font-display); }
+.stat small { color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; font-weight: 700; }
+.bar { height: 6px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 10px 6px 0; }
+.bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #ef6b4a, #e9d36a, #59c7e0, #6f8ff0); }
+aside { display: grid; gap: 14px; min-width: 0; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; gap: 10px; min-width: 0; }
+.card h2 { font: 700 11px var(--font-body); text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin: 0; }
+.mode { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button.btn { font: 700 14px var(--font-body); color: var(--fg); background: #2a241b; border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; cursor: pointer; }
+button.btn:hover { border-color: var(--accent); }
+button.primary { background: var(--accent); color: #1a1209; border-color: var(--accent); }
+button.btn[aria-pressed="true"] { background: var(--accent); color: #1a1209; border-color: var(--accent); }
+label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); font-weight: 600; }
+label output { color: var(--fg); font-family: var(--font-mono); font-size: 12px; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+.think { font-size: 15px; min-height: 4.5em; }
+.think .rule { color: var(--accent); font-weight: 700; }
+.log { font: 12.5px/1.55 var(--font-mono); max-height: 220px; overflow: auto; margin: 0; padding: 0; list-style: none; display: grid; gap: 1px; font-variant-numeric: tabular-nums; }
+.log li { display: grid; grid-template-columns: 52px 1fr; gap: 8px; color: var(--muted); }
+.log li:first-child { color: var(--fg); }
+.log li span:first-child { text-align: right; opacity: 0.7; }
+.msg { min-height: 1.5em; font-weight: 700; }
+.msg.ok { color: var(--good); } .msg.err { color: var(--bad); }
+.lessons { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.lesson { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+.lesson h3 { font: 800 17px/1.2 var(--font-display); margin: 0 0 4px; color: var(--accent); }
+.lesson p { margin: 0; color: var(--muted); }
+.lessons-title { font: 800 22px var(--font-display); margin: 8px 0 0; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1><span>Rainbow</span> Tower</h1>
+      <p class="sub">Ten rings, three pegs. Move one ring at a time and never put a bigger ring on a smaller one. Watch Claude solve it, or try it yourself.</p>
+    </div>
+    <nav class="tabs" id="levels" aria-label="Level">
+      <button class="tab" data-level="1" aria-pressed="true">1 · Classic</button>
+      <button class="tab" data-level="2" aria-pressed="false">2 · Neighbours</button>
+      <button class="tab" data-level="3" aria-pressed="false">3 · Four Pegs</button>
+      <button class="tab" data-level="4" aria-pressed="false">4 · Scrambled</button>
+    </nav>
+  </header>
+
+  <div class="main">
+    <section class="stage">
+      <canvas id="board" width="960" height="600" aria-label="Game board"></canvas>
+      <div class="stats">
+        <div class="stat"><small>Moves</small><b id="moves">0</b></div>
+        <div class="stat"><small>Optimal</small><b id="optimal">1,023</b></div>
+        <div class="stat"><small>Rule</small><b id="rule" style="font-size:15px;font-family:var(--font-body);padding-top:5px">Classic</b></div>
+      </div>
+      <div class="bar"><i id="progress"></i></div>
+    </section>
+
+    <aside>
+      <div class="card">
+        <div class="mode">
+          <button class="btn" id="mode-watch" aria-pressed="true">Watch Claude</button>
+          <button class="btn" id="mode-play" aria-pressed="false">Play yourself</button>
+        </div>
+        <label for="rings">Rings <output id="rings-out">10</output></label>
+        <input type="range" id="rings" min="3" max="10" value="10">
+        <div id="watch-controls" class="card" style="padding:0;border:0;background:none">
+          <div class="row">
+            <button class="btn primary" id="play">▶ Play</button>
+            <button class="btn" id="step">Step</button>
+            <button class="btn" id="finish">Finish</button>
+            <button class="btn" id="reset">Reset</button>
+          </div>
+          <label for="speed">Speed <output id="speed-out">4 moves/s</output></label>
+          <input type="range" id="speed" min="0" max="100" value="22">
+        </div>
+        <div id="play-controls" class="row" hidden>
+          <button class="btn" id="reset2">Reset</button>
+          <span style="color:var(--muted);font-size:13px">Tap a peg to lift its top ring, then tap where it goes.</span>
+        </div>
+        <div class="msg" id="msg" role="status"></div>
+      </div>
+
+      <div class="card">
+        <h2>Claude's thinking</h2>
+        <div class="think" id="think">Press Play to watch me solve it.</div>
+      </div>
+
+      <div class="card">
+        <h2>Move log</h2>
+        <ol class="log" id="log"></ol>
+      </div>
+    </aside>
+  </div>
+
+  <h2 class="lessons-title">What I learned solving it</h2>
+  <div class="lessons">
+    <div class="lesson"><h3>Start from the hardest move</h3><p>Before the biggest ring moves, every smaller ring has to be on the spare peg. That gives you the smaller problem to solve first.</p></div>
+    <div class="lesson"><h3>Know the target first</h3><p>T(n) = 2·T(n−1) + 1, so 10 rings take 2¹⁰ − 1 = 1,023 moves. Knowing that tells you whether a run was perfect.</p></div>
+    <div class="lesson"><h3>A rule that reads the board</h3><p>Nobody can keep 1,023 moves in their head. Odd turns: step the smallest ring along a cycle. Even turns: make the only other legal move.</p></div>
+    <div class="lesson"><h3>New rules change the plan</h3><p>With neighbour-only hops, the big ring has to stop in the middle, so the work triples to 3ⁿ − 1 = 59,048 moves.</p></div>
+    <div class="lesson"><h3>Use extra room well</h3><p>A fourth peg takes 1,023 moves down to 49, but only if you choose how many rings to park on it first.</p></div>
+    <div class="lesson"><h3>Messy start? Biggest first</h3><p>From a scrambled board, settle the biggest ring first and leave alone any ring that's already home.</p></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const LEVELS = {
+    1: { name: "Classic", pegs: 3, adjacent: false, rule: "Classic" },
+    2: { name: "Neighbours", pegs: 3, adjacent: true, rule: "Neighbour hops only" },
+    3: { name: "Four Pegs", pegs: 4, adjacent: false, rule: "4 pegs, A → D" },
+    4: { name: "Scrambled", pegs: 3, adjacent: false, rule: "Random start" },
+  };
+  // top (smallest) to bottom (biggest), matching the photo
+  const PALETTE = ["#6f8ff0", "#5fa6f2", "#59c7e0", "#a6d86e", "#d2df6a", "#efd97e", "#f3c868", "#f3a64a", "#ef8a45", "#e9684a"];
+  const L = i => String.fromCharCode(65 + i);
+  const fmt = n => n.toLocaleString("en-US");
+
+  // ---------- solvers (same logic as solvers.py) ----------
+  function classic(n, s, a, d, out) {
+    if (n === 0) return;
+    classic(n - 1, s, d, a, out); out.push([s, d]); classic(n - 1, a, s, d, out);
+  }
+  function neighbours(n, s, d, out) {
+    if (n === 0) return;
+    if (Math.abs(s - d) === 1) {
+      const far = 3 - s - d;
+      neighbours(n - 1, s, far, out); out.push([s, d]); neighbours(n - 1, far, d, out); return;
+    }
+    neighbours(n - 1, s, d, out); out.push([s, 1]); neighbours(n - 1, d, s, out); out.push([1, d]); neighbours(n - 1, s, d, out);
+  }
+  const fsMemo = new Map();
+  function fsSplit(n, pegs) {
+    const key = n + ":" + pegs;
+    if (fsMemo.has(key)) return fsMemo.get(key);
+    let best;
+    if (n === 0) best = [0, 0];
+    else if (n === 1) best = [1, 0];
+    else if (pegs === 3) best = [2 ** n - 1, 0];
+    else for (let k = 1; k < n; k++) {
+      const c = 2 * fsSplit(k, pegs)[0] + fsSplit(n - k, pegs - 1)[0];
+      if (!best || c < best[0]) best = [c, k];
+    }
+    fsMemo.set(key, best); return best;
+  }
+  function fourPegs(n, s, d, spares, out) {
+    if (n === 0) return;
+    if (spares.length === 1) { classic(n, s, spares[0], d, out); return; }
+    const k = fsSplit(n, spares.length + 2)[1];
+    if (k === 0) { if (n === 1) out.push([s, d]); else classic(n, s, spares[0], d, out); return; }
+    const park = spares[0], rest = spares.slice(1);
+    fourPegs(k, s, park, [d, ...rest], out); fourPegs(n - k, s, d, rest, out); fourPegs(k, park, d, [s, ...rest], out);
+  }
+  function fromAny(pegs) {
+    const where = {}; pegs.forEach((p, i) => p.forEach(r => where[r] = i));
+    const out = [], notes = [];
+    function gather(n, t) {
+      if (n === 0) return;
+      if (where[n] === t) { notes.push([out.length, `Ring ${n} is already on ${L(t)}, so I leave it.`]); gather(n - 1, t); return; }
+      const o = where[n], other = 3 - o - t;
+      gather(n - 1, other);
+      notes.push([out.length, `Everything smaller is on ${L(other)}, so ring ${n} goes ${L(o)} → ${L(t)}.`]);
+      out.push([o, t]); where[n] = t;
+      classic(n - 1, other, o, t, out);
+      for (let r = 1; r < n; r++) where[r] = t;
+    }
+    gather(Object.keys(where).length, 2);
+    return { moves: out, notes };
+  }
+  function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+  // ---------- state ----------
+  const S = { level: 1, n: 10, pegs: [], moves: 0, plan: null, notes: new Map(), idx: 0, playing: false, mode: "watch",
+              speed: 4, held: null, anim: null, seed: 7, phases: null, done: false };
+  const $ = id => document.getElementById(id);
+  const cv = $("board"), ctx = cv.getContext("2d");
+
+  function optimal() {
+    if (S.level === 1) return 2 ** S.n - 1;
+    if (S.level === 2) return 3 ** S.n - 1;
+    if (S.level === 3) return fsSplit(S.n, 4)[0];
+    return S.plan ? S.plan.length : null;
+  }
+
+  function reset() {
+    S.playing = false; S.anim = null; S.held = null; S.moves = 0; S.idx = 0; S.done = false; S.notes = new Map(); S.phases = null;
+    const cfg = LEVELS[S.level];
+    S.pegs = Array.from({ length: cfg.pegs }, () => []);
+    if (S.level === 4) {
+      const r = rng(S.seed + S.n * 31);
+      for (let size = S.n; size >= 1; size--) S.pegs[Math.floor(r() * 3)].push(size);
+    } else S.pegs[0] = Array.from({ length: S.n }, (_, i) => S.n - i);
+    S.plan = null;
+    if (S.level === 2) { S.plan = []; neighbours(S.n, 0, 2, S.plan); }
+    if (S.level === 3) {
+      S.plan = []; const k = fsSplit(S.n, 4)[1];
+      fourPegs(k, 0, 1, [3, 2], S.plan); const a = S.plan.length;
+      fourPegs(S.n - k, 0, 3, [2], S.plan); const b = S.plan.length;
+      fourPegs(k, 1, 3, [0, 2], S.plan);
+      S.phases = { k, a, b };
+    }
+    if (S.level === 4) { const r = fromAny(S.pegs.map(p => p.slice())); S.plan = r.moves; r.notes.forEach(([i, t]) => S.notes.set(i, t)); }
+    $("log").innerHTML = ""; $("msg").textContent = ""; $("msg").className = "msg";
+    $("think").innerHTML = S.mode === "watch" ? intro() : "Your turn. Try to match the optimal count.";
+    $("rule").textContent = cfg.rule;
+    $("play").textContent = "▶ Play";
+    updateStats(); draw();
+  }
+
+  function intro() {
+    const n = S.n;
+    switch (S.level) {
+      case 1: return `To move ring ${n}, all ${n - 1} smaller rings must first be on B. That nests all the way down, so the target is 2<sup>${n}</sup> − 1 = <b>${fmt(2 ** n - 1)}</b> moves. I'll play from the board using the alternation rule.`;
+      case 2: return `Rings can't jump A → C, so ring ${n} has to stop on B. The small tower crosses the board twice for each step of the big one: 3<sup>${n}</sup> − 1 = <b>${fmt(3 ** n - 1)}</b> moves. Turn up the speed!`;
+      case 3: return `With a 4th peg I park the top <b>${fsSplit(n, 4)[1]}</b> rings first using all four pegs, then move the other ${n - fsSplit(n, 4)[1]} with three. Target: <b>${fsSplit(n, 4)[0]}</b> moves.`;
+      case 4: return `Scrambled start. I settle the biggest ring first, leave alone any ring that's already on C, and solve the rest. This plan takes <b>${fmt(S.plan.length)}</b> moves, which brute-force search says is optimal.`;
+    }
+  }
+
+  // ---------- Claude's move choice ----------
+  function nextMove() {
+    if (S.level === 1) {
+      const turn = S.moves + 1;
+      const small = S.pegs.findIndex(p => p.length && p[p.length - 1] === 1);
+      if (turn % 2 === 1) {
+        const step = S.n % 2 === 0 ? 1 : 2; // +1 mod 3 = A→B→C, +2 = A→C→B
+        const d = (small + step) % 3;
+        return { s: small, d, why: `<span class="rule">Odd turn:</span> ring 1 steps one peg along its cycle (${S.n % 2 === 0 ? "A→B→C" : "A→C→B"}), ${L(small)} → ${L(d)}.` };
+      }
+      const [a, b] = [0, 1, 2].filter(i => i !== small);
+      const pa = S.pegs[a], pb = S.pegs[b];
+      const [s, d] = (!pa.length || (pb.length && pb[pb.length - 1] < pa[pa.length - 1])) ? [b, a] : [a, b];
+      return { s, d, why: `<span class="rule">Even turn:</span> the only legal move that leaves ring 1 alone is ring ${S.pegs[s][S.pegs[s].length - 1]}, ${L(s)} → ${L(d)}.` };
+    }
+    const [s, d] = S.plan[S.idx];
+    const ring = S.pegs[s][S.pegs[s].length - 1];
+    let why = S.notes.get(S.idx) || "";
+    if (S.level === 2) why = ring === S.n ? `<span class="rule">Big step:</span> ring ${S.n} hops ${L(s)} → ${L(d)}. The others are all on the far peg, out of its way.`
+                                          : `<span class="rule">Neighbour hop:</span> ring ${ring}, ${L(s)} → ${L(d)}.`;
+    if (S.level === 3) {
+      const { k, a, b } = S.phases;
+      why = S.idx < a ? `<span class="rule">Phase 1:</span> parking the top ${k} rings on B using all four pegs.`
+          : S.idx < b ? `<span class="rule">Phase 2:</span> moving the bottom ${S.n - k} rings A → D with three pegs (C as spare).`
+          : `<span class="rule">Phase 3:</span> bringing the ${k} parked rings from B down onto D.`;
+    }
+    if (S.level === 4 && !why) why = `<span class="rule">Rebuild:</span> ring ${ring}, ${L(s)} → ${L(d)}.`;
+    return { s, d, why };
+  }
+
+  function legal(s, d) {
+    const cfg = LEVELS[S.level];
+    if (s === d) return "Pick a different peg.";
+    if (cfg.adjacent && Math.abs(s - d) !== 1) return "On this level rings can only hop to a neighbouring peg.";
+    if (!S.pegs[s].length) return "That peg is empty.";
+    const t = S.pegs[d];
+    if (t.length && t[t.length - 1] < S.pegs[s][S.pegs[s].length - 1]) return "A bigger ring can't sit on a smaller one.";
+    return null;
+  }
+
+  function apply(s, d, why, quiet) {
+    const err = legal(s, d);
+    if (err) throw new Error(err);
+    const ring = S.pegs[s].pop(); S.pegs[d].push(ring); S.moves++;
+    if (S.plan) S.idx++;
+    if (!quiet) {
+      if (why) $("think").innerHTML = why;
+      const li = document.createElement("li");
+      li.innerHTML = `<span>${fmt(S.moves)}</span><span>ring ${ring}: ${L(s)} → ${L(d)}</span>`;
+      const log = $("log"); log.prepend(li); while (log.children.length > 60) log.lastChild.remove();
+    }
+    if (solved()) finishMessage();
+    return ring;
+  }
+
+  function solved() { return S.pegs[S.pegs.length - 1].length === S.n; }
+  function finishMessage() {
+    S.playing = false; S.done = true; $("play").textContent = "▶ Play";
+    const best = optimal();
+    const perfect = S.moves === best;
+    $("msg").className = "msg ok";
+    $("msg").textContent = `Solved in ${fmt(S.moves)} moves${perfect ? ", which is optimal." : ` (optimal is ${fmt(best)}).`}`;
+    if (S.mode === "watch") $("think").innerHTML = `Done: <b>${fmt(S.moves)}</b> moves, exactly the target. Every move was checked by the same rules you play by.`;
+    updateStats(); draw();
+  }
+
+  function updateStats() {
+    $("moves").textContent = fmt(S.moves);
+    const best = optimal();
+    $("optimal").textContent = best == null ? "—" : fmt(best);
+    $("progress").style.width = best ? Math.min(100, S.moves / best * 100) + "%" : "0%";
+  }
+
+  // ---------- drawing ----------
+  function geom() {
+    const W = cv.width, H = cv.height, P = S.pegs.length;
+    const base = H * 0.9, colW = W / P;
+    const maxW = colW * (P === 4 ? 0.9 : 0.92), minW = maxW * 0.3;
+    const rh = Math.min(H * 0.072, (H * 0.74) / S.n);
+    return { W, H, P, base, colW, maxW, minW, rh };
+  }
+  function ringColor(size) { return PALETTE[Math.round((size - 1) * 9 / Math.max(1, S.n - 1))]; }
+  function ringW(g, size) { return g.minW + (S.n === 1 ? 0 : (size - 1) / (S.n - 1)) * (g.maxW - g.minW); }
+
+  function shade(hex, f) {
+    const n = parseInt(hex.slice(1), 16);
+    const ch = v => Math.max(0, Math.min(255, Math.round(f < 0 ? v * (1 + f) : v + (255 - v) * f)));
+    return `rgb(${ch(n >> 16)},${ch(n >> 8 & 255)},${ch(n & 255)})`;
+  }
+  function pill(x, y, w, h, size, lifted) {
+    const r = h / 2, c = ringColor(size);
+    ctx.save();
+    if (lifted) { ctx.shadowColor = "rgba(246,184,75,.55)"; ctx.shadowBlur = 18; }
+    ctx.beginPath(); ctx.roundRect(x - w / 2, y - h, w, h, r);
+    const g = ctx.createLinearGradient(0, y - h, 0, y);
+    g.addColorStop(0, shade(c, 0.18)); g.addColorStop(1, shade(c, -0.12));
+    ctx.fillStyle = g; ctx.fill();
+    ctx.shadowBlur = 0; ctx.lineWidth = Math.max(1.5, h * 0.07); ctx.strokeStyle = shade(c, -0.45); ctx.stroke();
+    ctx.beginPath(); ctx.roundRect(x - w / 2 + r * 0.9, y - h + h * 0.2, w - r * 1.8, h * 0.14, h * 0.07);
+    ctx.fillStyle = "rgba(255,255,255,.35)"; ctx.fill();
+    ctx.restore();
+  }
+
+  function draw() {
+    const g = geom();
+    ctx.clearRect(0, 0, g.W, g.H);
+    for (let i = 0; i < g.P; i++) {
+      const x = g.colW * (i + 0.5);
+      const top = g.base - g.rh * (S.n + 1.1);
+      const pw = Math.max(8, g.rh * 0.36);
+      ctx.beginPath(); ctx.roundRect(x - pw / 2, top, pw, g.base - top, pw / 2);
+      const wg = ctx.createLinearGradient(x - pw / 2, 0, x + pw / 2, 0);
+      wg.addColorStop(0, "#8a6a45"); wg.addColorStop(0.5, "#c7a173"); wg.addColorStop(1, "#7b5c3b");
+      ctx.fillStyle = wg; ctx.fill();
+      ctx.fillStyle = S.held === i ? "#f6b84b" : "#a89d8b";
+      ctx.font = `800 ${Math.round(g.H * 0.045)}px "Baloo 2", system-ui, sans-serif`;
+      ctx.textAlign = "center"; ctx.fillText(L(i), x, g.H * 0.975);
+    }
+    ctx.fillStyle = "#2f2920"; ctx.fillRect(0, g.base, g.W, 3);
+    S.pegs.forEach((peg, i) => {
+      const x = g.colW * (i + 0.5);
+      peg.forEach((size, j) => {
+        const isHeld = S.held === i && j === peg.length - 1;
+        const y = g.base - j * g.rh - (isHeld ? g.rh * 1.2 : 0);
+        if (S.anim && i === S.anim.d && j === peg.length - 1) return;
+        pill(x, y, ringW(g, size), g.rh * 0.94, size, isHeld);
+      });
+    });
+    if (S.anim) {
+      const a = S.anim, t = Math.min(1, a.t);
+      const x0 = g.colW * (a.s + 0.5), x1 = g.colW * (a.d + 0.5);
+      const y0 = g.base - a.fromH * g.rh, y1 = g.base - a.toH * g.rh, lift = g.base - g.rh * (S.n + 1.6);
+      let x, y;
+      if (t < 0.3) { const u = ease(t / 0.3); x = x0; y = y0 + (lift - y0) * u; }
+      else if (t < 0.7) { const u = ease((t - 0.3) / 0.4); x = x0 + (x1 - x0) * u; y = lift; }
+      else { const u = ease((t - 0.7) / 0.3); x = x1; y = lift + (y1 - lift) * u; }
+      pill(x, y, ringW(g, a.ring), g.rh * 0.94, a.ring, true);
+    }
+  }
+  const ease = u => u < 0.5 ? 2 * u * u : 1 - (-2 * u + 2) ** 2 / 2;
+
+  // ---------- loop ----------
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let last = 0, carry = 0;
+  function tick(ts) {
+    const dt = last ? Math.min(0.1, (ts - last) / 1000) : 0; last = ts;
+    if (S.anim) {
+      S.anim.t += dt * S.anim.rate;
+      if (S.anim.t >= 1) S.anim = null;
+      draw();
+    } else if (S.playing && !S.done) {
+      if (S.speed <= 10 && !reduceMotion) { stepAnimated(); }
+      else {
+        carry += dt * S.speed;
+        let k = Math.floor(carry); carry -= k;
+        while (k-- > 0 && !S.done) { const m = nextMove(); apply(m.s, m.d, m.why, k > 0); }
+        updateStats(); draw();
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+  function stepAnimated() {
+    if (S.done || solved()) return;
+    const m = nextMove();
+    const fromH = S.pegs[m.s].length - 1, toH = S.pegs[m.d].length;
+    const ring = apply(m.s, m.d, m.why, false);
+    updateStats();
+    S.anim = { s: m.s, d: m.d, ring, fromH, toH, t: 0, rate: S.speed };
+    draw();
+  }
+  requestAnimationFrame(tick);
+
+  // ---------- controls ----------
+  function speedFromSlider(v) { return Math.round(Math.pow(10, v / 100 * Math.log10(4000)) * 1) || 1; }
+  function setSpeed() {
+    S.speed = speedFromSlider(+$("speed").value);
+    $("speed-out").textContent = fmt(S.speed) + " moves/s";
+  }
+  $("speed").addEventListener("input", setSpeed);
+  $("play").addEventListener("click", () => {
+    if (S.done) reset();
+    S.playing = !S.playing;
+    $("play").textContent = S.playing ? "❚❚ Pause" : "▶ Play";
+  });
+  $("step").addEventListener("click", () => { S.playing = false; $("play").textContent = "▶ Play"; if (!S.anim) stepAnimated(); });
+  $("finish").addEventListener("click", () => {
+    S.playing = false; S.anim = null;
+    let guard = 0;
+    while (!S.done && !solved() && guard++ < 100000) { const m = nextMove(); apply(m.s, m.d, m.why, true); }
+    updateStats(); draw();
+  });
+  $("reset").addEventListener("click", reset);
+  $("reset2").addEventListener("click", reset);
+  $("rings").addEventListener("input", e => { S.n = +e.target.value; $("rings-out").textContent = S.n; reset(); });
+  document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(x => x.setAttribute("aria-pressed", x === b));
+    S.level = +b.dataset.level; reset();
+  }));
+  function setMode(m) {
+    S.mode = m;
+    $("mode-watch").setAttribute("aria-pressed", m === "watch");
+    $("mode-play").setAttribute("aria-pressed", m === "play");
+    $("watch-controls").hidden = m !== "watch";
+    $("play-controls").hidden = m !== "play";
+    reset();
+  }
+  $("mode-watch").addEventListener("click", () => setMode("watch"));
+  $("mode-play").addEventListener("click", () => setMode("play"));
+
+  function pickPeg(i) {
+    if (S.mode !== "play" || S.done || S.anim) return;
+    if (S.held == null) {
+      if (!S.pegs[i].length) { flash("That peg is empty."); return; }
+      S.held = i; $("msg").textContent = ""; draw(); return;
+    }
+    const s = S.held; S.held = null;
+    if (s === i) { draw(); return; }
+    const err = legal(s, i);
+    if (err) { flash(err); draw(); return; }
+    const fromH = S.pegs[s].length - 1, toH = S.pegs[i].length;
+    const ring = apply(s, i, null, false);
+    if (!S.done) $("think").innerHTML = `You moved ring ${ring}, ${L(s)} → ${L(i)}.`;
+    updateStats();
+    S.anim = reduceMotion ? null : { s, d: i, ring, fromH, toH, t: 0.3, rate: 5 };
+    draw();
+  }
+  function flash(t) { $("msg").className = "msg err"; $("msg").textContent = t; }
+  cv.addEventListener("click", e => {
+    const r = cv.getBoundingClientRect();
+    pickPeg(Math.floor((e.clientX - r.left) / r.width * S.pegs.length));
+  });
+  document.addEventListener("keydown", e => {
+    const i = "abcd".indexOf(e.key.toLowerCase());
+    if (i >= 0 && i < S.pegs.length) pickPeg(i);
+  });
+
+  function fit() {
+    const r = cv.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.width * 10 / 16 * dpr); draw();
+  }
+  new ResizeObserver(fit).observe(cv);
+  setSpeed(); reset(); fit();
+  if (document.fonts) document.fonts.ready.then(draw);
+})();
+</script>
