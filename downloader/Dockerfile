@@ -4,7 +4,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg && rm -r
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt gunicorn
-COPY app.py index.html ./
+COPY app.py index.html manifest.webmanifest sw.js icon-192.png icon-512.png ./
 ENV PORT=8000
 EXPOSE 8000
 # Long timeout: the server finishes the whole download before sending it to the browser.

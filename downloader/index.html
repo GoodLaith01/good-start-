@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Grab</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#1f8a5b">
+<link rel="icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <style>
   /* One centered column: paste box on top, result card with a quality list below. */
   :root {
@@ -49,6 +55,14 @@
   .tip { background: var(--panel); border: 1px dashed var(--line); border-radius: 12px; padding: 14px; font-size: 14px; color: var(--muted); }
   .tip p { margin: 0 0 8px; }
   .sites { color: var(--muted); font-size: 14px; margin: 0; }
+  .save { display: grid; gap: 8px; background: var(--panel); border: 2px solid var(--accent); border-radius: 14px; padding: 16px; }
+  .save button { font-size: 17px; padding: 14px; }
+  .save p { margin: 0; color: var(--muted); font-size: 14px; }
+  details.help { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; font-size: 15px; }
+  details.help summary { cursor: pointer; font-weight: 700; }
+  details.help ol { margin: 8px 0 4px; padding-inline-start: 22px; }
+  details.help h3 { font-size: 15px; margin: 12px 0 0; }
+  code { background: var(--bg); padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere; direction: ltr; unicode-bidi: embed; }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -79,6 +93,28 @@
     </div>
   </section>
 
+  <section class="save" id="save" hidden>
+    <button class="primary" id="saveBtn" data-t="saveBtn">Save to Photos / Gallery</button>
+    <p data-t="saveHint">On iPhone choose "Save Video". On Android choose your gallery, or the video is already in Downloads.</p>
+  </section>
+
+  <details class="help" id="help">
+    <summary data-t="helpTitle">Use it from TikTok, Instagram, YouTube… (phone setup)</summary>
+    <h3 data-t="andTitle">Android</h3>
+    <ol>
+      <li data-t="and1">Open this site in Chrome.</li>
+      <li data-t="and2">Tap ⋮ → "Install app" (or "Add to Home screen").</li>
+      <li data-t="and3">In any app, tap Share → Grab. The video downloads by itself, then tap "Save to Photos / Gallery".</li>
+    </ol>
+    <h3 data-t="iosTitle">iPhone (one-time Shortcut)</h3>
+    <ol>
+      <li data-t="ios1">Open the Shortcuts app → + → Add Action → "Open URLs".</li>
+      <li data-t="ios2">Set the URL to the address below, then tap the ⓘ (Details) and turn on "Show in Share Sheet".</li>
+      <li><code id="shortcutUrl"></code></li>
+      <li data-t="ios3">Name it "Grab". In any app, tap Share → Grab. When the video is ready, tap "Save to Photos / Gallery" → "Save Video".</li>
+    </ol>
+  </details>
+
   <section class="tip">
     <p data-t="tip">One-click download from any video page: drag this button to your bookmarks bar. On a video page, click it and Grab opens with that video ready.</p>
     <a class="btn primary" id="bookmarklet" href="#" data-t="bm">Grab it</a>
@@ -97,7 +133,16 @@ const T = {
         tip: "One-click download from any video page: drag this button to your bookmarks bar. On a video page, click it and Grab opens with that video ready.",
         bm: "Grab it", video: "Video", audio: "Audio only", best: "best", unknown: "size unknown",
         sites: "Works with YouTube, TikTok, Instagram, X (Twitter), Facebook, Reddit, Vimeo, Twitch clips and 1,000+ more sites. Download only what you have the right to keep.",
-        other: "العربية" },
+        other: "العربية", auto: "Got the link. Downloading the best quality…",
+        saveBtn: "Save to Photos / Gallery", saveHint: "On iPhone choose \"Save Video\". On Android choose your gallery, or the video is already in Downloads.",
+        ready: "Video ready. Tap the green button to save it to your phone.",
+        helpTitle: "Use it from TikTok, Instagram, YouTube… (phone setup)", andTitle: "Android",
+        and1: "Open this site in Chrome.", and2: "Tap ⋮ → \"Install app\" (or \"Add to Home screen\").",
+        and3: "In any app, tap Share → Grab. The video downloads by itself, then tap \"Save to Photos / Gallery\".",
+        iosTitle: "iPhone (one-time Shortcut)", ios1: "Open the Shortcuts app → + → Add Action → \"Open URLs\".",
+        ios2: "Set the URL to the address below, then tap ⓘ (Details) and turn on \"Show in Share Sheet\".",
+        ios3: "Name it \"Grab\". In any app, tap Share → Grab. When the video is ready, tap \"Save to Photos / Gallery\" → \"Save Video\".",
+        noLink: "No video link found in what was shared." },
   ar: { h1: "لتحميل الفيديو", sub: "الصق الرابط، اختر الجودة، ثم حمّل. يعمل على جهازك. بدون إعلانات.",
         paste: "لصق", go: "جلب الفيديو", dl: "تحميل", preparing: "جارٍ التجهيز…", reading: "جارٍ قراءة الرابط…",
         working: "جارٍ التحميل على جهازك. الفيديوهات الكبيرة تستغرق وقتًا أطول، أبقِ هذه الصفحة مفتوحة.",
@@ -105,11 +150,20 @@ const T = {
         tip: "تحميل بنقرة واحدة من أي صفحة فيديو: اسحب هذا الزر إلى شريط الإشارات المرجعية. في صفحة الفيديو اضغط عليه فيفتح Grab والفيديو جاهز.",
         bm: "حمّل بـ Grab", video: "فيديو", audio: "صوت فقط", best: "الأفضل", unknown: "الحجم غير معروف",
         sites: "يعمل مع يوتيوب وتيك توك وإنستغرام وإكس (تويتر) وفيسبوك وريديت وفيميو ومقاطع تويتش وأكثر من 1000 موقع آخر. حمّل فقط ما يحق لك الاحتفاظ به.",
-        other: "English" },
+        other: "English", auto: "تم استلام الرابط. جارٍ تحميل أفضل جودة…",
+        saveBtn: "حفظ في الصور / المعرض", saveHint: "على آيفون اختر \"حفظ الفيديو\". على أندرويد اختر المعرض، أو ستجد الفيديو في التنزيلات.",
+        ready: "الفيديو جاهز. اضغط الزر الأخضر لحفظه في هاتفك.",
+        helpTitle: "استخدمه من تيك توك وإنستغرام ويوتيوب… (إعداد الهاتف)", andTitle: "أندرويد",
+        and1: "افتح هذا الموقع في متصفح Chrome.", and2: "اضغط ⋮ ثم \"تثبيت التطبيق\" (أو \"إضافة إلى الشاشة الرئيسية\").",
+        and3: "في أي تطبيق اضغط مشاركة ← Grab. يبدأ التحميل تلقائيًا، ثم اضغط \"حفظ في الصور / المعرض\".",
+        iosTitle: "آيفون (اختصار يُعد مرة واحدة)", ios1: "افتح تطبيق الاختصارات ← + ← إضافة إجراء ← \"فتح عناوين URL\".",
+        ios2: "ضع العنوان التالي، ثم اضغط ⓘ (التفاصيل) وفعّل \"إظهار في ورقة المشاركة\".",
+        ios3: "سمّه \"Grab\". في أي تطبيق اضغط مشاركة ← Grab. عندما يجهز الفيديو اضغط \"حفظ في الصور / المعرض\" ← \"حفظ الفيديو\".",
+        noLink: "لم يتم العثور على رابط فيديو في المحتوى المُشارك." },
 };
 let lang = "en";
 try { lang = localStorage.getItem("grab-lang") || (navigator.language.startsWith("ar") ? "ar" : "en"); } catch {}
-let current = "", lastInfo = null;
+let current = "", lastInfo = null, readyFile = null;
 
 function applyLang() {
   const t = T[lang];
@@ -128,6 +182,7 @@ $("lang").addEventListener("click", () => {
 // Bookmarklet: opens Grab with the current page's address, the same idea as SaveFrom's helper button.
 $("bookmarklet").href = `javascript:void(open('${location.origin}/?url='+encodeURIComponent(location.href)))`;
 $("bookmarklet").addEventListener("click", e => e.preventDefault());
+$("shortcutUrl").textContent = `${location.origin}/?url=[Shortcut Input]`;
 
 function status(text, isError) {
   $("status").textContent = text;
@@ -148,8 +203,8 @@ $("paste").addEventListener("click", async () => {
 
 $("form").addEventListener("submit", e => { e.preventDefault(); lookup($("url").value.trim()); });
 
-async function lookup(url) {
-  $("go").disabled = true; $("card").hidden = true;
+async function lookup(url, auto) {
+  $("go").disabled = true; $("card").hidden = true; $("save").hidden = true;
   status(T[lang].reading);
   try {
     const r = await fetch("/api/info", { method: "POST", headers: { "Content-Type": "application/json" },
@@ -159,6 +214,11 @@ async function lookup(url) {
     current = url; lastInfo = d;
     render(d);
     status("");
+    if (auto) {
+      status(T[lang].auto);
+      const first = $("list").querySelector("button");
+      if (first) download(d.options[0].id, first);
+    }
   } catch (err) {
     status(err.message, true);
   } finally {
@@ -205,10 +265,18 @@ async function download(preset, btn) {
     const name = decodeURIComponent((r.headers.get("Content-Disposition") || "")
       .match(/filename\*?=(?:UTF-8'')?"?([^";]+)/i)?.[1] || "video.mp4");
     const blob = await r.blob();
-    const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: name });
-    document.body.append(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 60000);
-    status(t.saved(name));
+    const file = new File([blob], name, { type: blob.type || (name.endsWith(".mp3") ? "audio/mpeg" : "video/mp4") });
+    const phone = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || navigator.maxTouchPoints > 1;
+    if (phone && navigator.canShare && navigator.canShare({ files: [file] })) {
+      // Phones save to the photo album through the share sheet, which needs a fresh tap.
+      readyFile = file;
+      $("save").hidden = false;
+      $("save").scrollIntoView({ behavior: "smooth", block: "center" });
+      status(t.ready);
+    } else {
+      saveAsDownload(file);
+      status(t.saved(name));
+    }
   } catch (err) {
     status(err.message, true);
   } finally {
@@ -217,10 +285,34 @@ async function download(preset, btn) {
   }
 }
 
+function saveAsDownload(file) {
+  const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(file), download: file.name });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+}
+
+$("saveBtn").addEventListener("click", async () => {
+  if (!readyFile) return;
+  try {
+    await navigator.share({ files: [readyFile] });
+    status(T[lang].saved(readyFile.name));
+  } catch (err) {
+    if (err.name !== "AbortError") { saveAsDownload(readyFile); status(T[lang].saved(readyFile.name)); }
+  }
+});
+
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
+
 applyLang();
 // Opened from the bookmark button (or a shared link like http://127.0.0.1:8000/?url=...): start right away.
-const incoming = new URLSearchParams(location.search).get("url");
-if (incoming) { $("url").value = incoming; lookup(incoming); }
+const params = new URLSearchParams(location.search);
+const shared = ["url", "text", "title"].map(k => params.get(k) || "").join(" ");
+if (shared.trim()) {
+  const link = (shared.match(/https?:\/\/[^\s"'<>]+/) || [])[0];
+  history.replaceState(null, "", "/");
+  if (link) { $("url").value = link; lookup(link, true); }
+  else status(T[lang].noLink, true);
+}
 </script>
 </body>
 </html>

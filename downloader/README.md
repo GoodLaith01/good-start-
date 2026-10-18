@@ -51,6 +51,23 @@ Private videos and videos that need a login can't be downloaded. Only download v
 you have the right to save, such as your own uploads, content with a free licence, or
 personal offline viewing where the platform's terms allow it.
 
+## Share from TikTok, Instagram, YouTube… straight to your phone's gallery
+
+Once Grab is online (next section), set up your phone once:
+
+**Android**
+1. Open your Grab website in Chrome and tap ⋮ → **Install app** (or **Add to Home screen**).
+2. In any app, tap **Share → Grab**. Grab opens, reads the link and downloads the best quality by itself.
+3. Tap **Save to Photos / Gallery**. The video also appears in your Downloads, which the Gallery shows.
+
+**iPhone** (iOS doesn't let websites join the Share menu, so a Shortcut does it)
+1. Open **Shortcuts → + → Add Action → Open URLs**.
+2. Set the URL to `https://YOUR-GRAB-SITE/?url=` followed by the **Shortcut Input** variable.
+3. Tap ⓘ (Details) and turn on **Show in Share Sheet**. Name it **Grab**.
+4. In any app, tap **Share → Grab**. When the video is ready, tap **Save to Photos / Gallery → Save Video**.
+
+The same steps are shown inside Grab under "phone setup", in English and Arabic.
+
 ## Put it online as your own website (free)
 
 The `Dockerfile` makes Grab a website that any Docker host can run. Example with

@@ -82,9 +82,17 @@ app = Flask(__name__)
 PASSWORD = os.environ.get("GRAB_PASSWORD", "")
 
 
+PUBLIC_FILES = {
+    "/manifest.webmanifest": "application/manifest+json",
+    "/sw.js": "text/javascript",
+    "/icon-192.png": "image/png",
+    "/icon-512.png": "image/png",
+}
+
+
 @app.before_request
 def require_password():
-    if not PASSWORD:
+    if not PASSWORD or request.path in PUBLIC_FILES:  # app files must load before the password prompt
         return None
     auth = request.authorization
     if auth and hmac.compare_digest(auth.password or "", PASSWORD):
@@ -127,6 +135,18 @@ def bad_request(err):
 @app.get("/")
 def index():
     return send_file(HERE / "index.html")
+
+
+@app.get("/<name>")
+def app_file(name):
+    mime = PUBLIC_FILES.get("/" + name)
+    if not mime:
+        return jsonify(error="Not found."), 404
+    resp = send_file(HERE / name, mimetype=mime)
+    if name == "sw.js":
+        resp.headers["Service-Worker-Allowed"] = "/"
+        resp.headers["Cache-Control"] = "no-cache"
+    return resp
 
 
 @app.post("/api/info")
