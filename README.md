@@ -20,3 +20,7 @@ python3 -m unittest test_solvers          # solvers vs brute-force search
 ```
 
 What solving it taught: `.claude/skills/recursive-puzzle-solving/SKILL.md`.
+
+## Grab video downloader
+
+A free, ad-free video downloader that runs on your own computer. See [`downloader/`](downloader/README.md).
