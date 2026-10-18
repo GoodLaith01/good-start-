@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Grab</title>
 <style>
-  /* One centered column: paste box on top, result card below. */
+  /* One centered column: paste box on top, result card with a quality list below. */
   :root {
     --bg: #f4f6f3; --panel: #ffffff; --fg: #18201b; --muted: #5d6a61; --line: #dde3dc;
     --accent: #1f8a5b; --accent-fg: #ffffff; --bad: #c2412d;
-    --font: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+    --font: "Segoe UI", Tahoma, system-ui, -apple-system, Roboto, sans-serif;
   }
   @media (prefers-color-scheme: dark) {
     :root { --bg: #111613; --panel: #1a211d; --fg: #e8eee9; --muted: #98a59c; --line: #2b352f;
@@ -17,43 +17,55 @@
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 var(--font);
-         padding: 40px max(16px, env(safe-area-inset-left)) 40px max(16px, env(safe-area-inset-right)); }
-  main { max-width: 640px; margin: 0 auto; display: grid; gap: 20px; }
+         padding: 32px max(16px, env(safe-area-inset-left)) 40px max(16px, env(safe-area-inset-right)); }
+  main { max-width: 680px; margin: 0 auto; display: grid; gap: 20px; }
+  header { display: flex; justify-content: space-between; align-items: start; gap: 12px; flex-wrap: wrap; }
   h1 { margin: 0; font-size: 34px; letter-spacing: -0.02em; }
   h1 span { color: var(--accent); }
   .sub { margin: 4px 0 0; color: var(--muted); }
   form { display: flex; gap: 8px; flex-wrap: wrap; }
   input { flex: 1 1 260px; min-width: 0; font: inherit; padding: 13px 14px; border-radius: 10px;
-          border: 1px solid var(--line); background: var(--panel); color: var(--fg); }
+          border: 1px solid var(--line); background: var(--panel); color: var(--fg); direction: ltr; }
   input:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  button { font: 600 15px var(--font); padding: 12px 18px; border-radius: 10px; border: 1px solid var(--line);
-           background: var(--panel); color: var(--fg); cursor: pointer; }
-  button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  button, .btn { font: 600 15px var(--font); padding: 11px 16px; border-radius: 10px; border: 1px solid var(--line);
+           background: var(--panel); color: var(--fg); cursor: pointer; text-decoration: none; display: inline-block; }
+  .primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
   button:disabled { opacity: .55; cursor: wait; }
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px;
           display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: 16px; }
-  @media (max-width: 520px) { .card { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 540px) { .card { grid-template-columns: minmax(0, 1fr); } }
   .thumb { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; background: var(--line); }
   .title { font-weight: 700; margin: 0; overflow-wrap: anywhere; }
-  .meta { color: var(--muted); font-size: 14px; margin: 2px 0 12px; }
-  .options { display: flex; flex-wrap: wrap; gap: 8px; }
-  .status { min-height: 1.5em; color: var(--muted); }
+  .meta { color: var(--muted); font-size: 14px; margin: 2px 0 10px; }
+  .list { display: grid; gap: 6px; }
+  .row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 12px;
+         padding: 6px 0; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  .row b { font-size: 15px; }
+  .row small { color: var(--muted); }
+  .row .size { color: var(--muted); font-size: 14px; }
+  .row button { padding: 8px 14px; }
+  .status { min-height: 1.5em; color: var(--muted); margin: 0; }
   .status.err { color: var(--bad); }
-  .sites { color: var(--muted); font-size: 14px; }
+  .tip { background: var(--panel); border: 1px dashed var(--line); border-radius: 12px; padding: 14px; font-size: 14px; color: var(--muted); }
+  .tip p { margin: 0 0 8px; }
+  .sites { color: var(--muted); font-size: 14px; margin: 0; }
   [hidden] { display: none !important; }
 </style>
 </head>
 <body>
 <main>
   <header>
-    <h1><span>Grab</span> video downloader</h1>
-    <p class="sub">Paste a link, pick a quality, download. Runs on your computer. No ads.</p>
+    <div>
+      <h1><span>Grab</span> <span data-t="h1" style="color:inherit">video downloader</span></h1>
+      <p class="sub" data-t="sub">Paste a link, pick a quality, download. Runs on your computer. No ads.</p>
+    </div>
+    <button type="button" id="lang" aria-label="Language">العربية</button>
   </header>
 
   <form id="form">
     <input id="url" type="url" placeholder="https://…" autocomplete="off" required aria-label="Video link">
-    <button type="button" id="paste">Paste</button>
-    <button class="primary" id="go">Get video</button>
+    <button type="button" id="paste" data-t="paste">Paste</button>
+    <button class="primary" id="go" data-t="go">Get video</button>
   </form>
 
   <p class="status" id="status" role="status"></p>
@@ -63,73 +75,130 @@
     <div>
       <p class="title" id="title"></p>
       <p class="meta" id="meta"></p>
-      <div class="options" id="options"></div>
+      <div class="list" id="list"></div>
     </div>
   </section>
 
-  <p class="sites">Works with YouTube, TikTok, Instagram, X (Twitter), Facebook, Reddit, Vimeo, Twitch clips and
-    <a href="https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md" target="_blank" rel="noopener">1,000+ more</a>.
-    Download only what you have the right to keep.</p>
+  <section class="tip">
+    <p data-t="tip">One-click download from any video page: drag this button to your bookmarks bar. On a video page, click it and Grab opens with that video ready.</p>
+    <a class="btn primary" id="bookmarklet" href="#" data-t="bm">Grab it</a>
+  </section>
+
+  <p class="sites" data-t="sites">Works with YouTube, TikTok, Instagram, X (Twitter), Facebook, Reddit, Vimeo, Twitch clips and 1,000+ more sites. Download only what you have the right to keep.</p>
 </main>
 
 <script>
 const $ = id => document.getElementById(id);
-const LABELS = { best: "Best quality", "1080": "1080p", "720": "720p", "480": "480p", audio: "Audio only" };
-let current = "";
+const T = {
+  en: { h1: "video downloader", sub: "Paste a link, pick a quality, download. Runs on your computer. No ads.",
+        paste: "Paste", go: "Get video", dl: "Download", preparing: "Preparing…", reading: "Reading the link…",
+        working: "Downloading on your computer. Bigger videos take longer, so keep this tab open.",
+        saved: n => `Saved "${n}" to your Downloads folder.`, pasteBlocked: "Your browser blocked pasting. Press Ctrl+V (or long-press) in the box instead.",
+        tip: "One-click download from any video page: drag this button to your bookmarks bar. On a video page, click it and Grab opens with that video ready.",
+        bm: "Grab it", video: "Video", audio: "Audio only", best: "best", unknown: "size unknown",
+        sites: "Works with YouTube, TikTok, Instagram, X (Twitter), Facebook, Reddit, Vimeo, Twitch clips and 1,000+ more sites. Download only what you have the right to keep.",
+        other: "العربية" },
+  ar: { h1: "لتحميل الفيديو", sub: "الصق الرابط، اختر الجودة، ثم حمّل. يعمل على جهازك. بدون إعلانات.",
+        paste: "لصق", go: "جلب الفيديو", dl: "تحميل", preparing: "جارٍ التجهيز…", reading: "جارٍ قراءة الرابط…",
+        working: "جارٍ التحميل على جهازك. الفيديوهات الكبيرة تستغرق وقتًا أطول، أبقِ هذه الصفحة مفتوحة.",
+        saved: n => `تم حفظ "${n}" في مجلد التنزيلات.`, pasteBlocked: "المتصفح منع اللصق. اضغط Ctrl+V (أو اضغط مطولًا) داخل المربع.",
+        tip: "تحميل بنقرة واحدة من أي صفحة فيديو: اسحب هذا الزر إلى شريط الإشارات المرجعية. في صفحة الفيديو اضغط عليه فيفتح Grab والفيديو جاهز.",
+        bm: "حمّل بـ Grab", video: "فيديو", audio: "صوت فقط", best: "الأفضل", unknown: "الحجم غير معروف",
+        sites: "يعمل مع يوتيوب وتيك توك وإنستغرام وإكس (تويتر) وفيسبوك وريديت وفيميو ومقاطع تويتش وأكثر من 1000 موقع آخر. حمّل فقط ما يحق لك الاحتفاظ به.",
+        other: "English" },
+};
+let lang = "en";
+try { lang = localStorage.getItem("grab-lang") || (navigator.language.startsWith("ar") ? "ar" : "en"); } catch {}
+let current = "", lastInfo = null;
+
+function applyLang() {
+  const t = T[lang];
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  document.querySelectorAll("[data-t]").forEach(el => el.textContent = t[el.dataset.t]);
+  $("lang").textContent = t.other;
+  if (lastInfo) render(lastInfo);
+}
+$("lang").addEventListener("click", () => {
+  lang = lang === "en" ? "ar" : "en";
+  try { localStorage.setItem("grab-lang", lang); } catch {}
+  applyLang();
+});
+
+// Bookmarklet: opens Grab with the current page's address, the same idea as SaveFrom's helper button.
+$("bookmarklet").href = `javascript:void(open('${location.origin}/?url='+encodeURIComponent(location.href)))`;
+$("bookmarklet").addEventListener("click", e => e.preventDefault());
 
 function status(text, isError) {
   $("status").textContent = text;
   $("status").className = "status" + (isError ? " err" : "");
 }
-function fmtTime(s) {
+const fmtTime = s => {
   if (!s) return "";
   s = Math.round(s);
   const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), sec = String(s % 60).padStart(2, "0");
   return h ? `${h}:${String(m).padStart(2, "0")}:${sec}` : `${m}:${sec}`;
-}
+};
+const fmtSize = b => !b ? T[lang].unknown : b > 1e9 ? (b / 1e9).toFixed(2) + " GB" : (b / 1e6).toFixed(1) + " MB";
 
 $("paste").addEventListener("click", async () => {
   try { $("url").value = (await navigator.clipboard.readText()).trim(); $("url").focus(); }
-  catch { status("Your browser blocked pasting. Press Ctrl+V (or long-press) in the box instead.", true); }
+  catch { status(T[lang].pasteBlocked, true); }
 });
 
-$("form").addEventListener("submit", async e => {
-  e.preventDefault();
-  const url = $("url").value.trim();
+$("form").addEventListener("submit", e => { e.preventDefault(); lookup($("url").value.trim()); });
+
+async function lookup(url) {
   $("go").disabled = true; $("card").hidden = true;
-  status("Reading the link…");
+  status(T[lang].reading);
   try {
     const r = await fetch("/api/info", { method: "POST", headers: { "Content-Type": "application/json" },
                                           body: JSON.stringify({ url }) });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || "Couldn't read that link.");
-    current = url;
-    $("thumb").src = d.thumbnail || ""; $("thumb").hidden = !d.thumbnail;
-    $("title").textContent = d.title;
-    $("meta").textContent = [d.site, d.uploader, fmtTime(d.duration), d.best_height ? d.best_height + "p" : ""]
-      .filter(Boolean).join(" · ");
-    $("options").replaceChildren(...d.presets.map(p => {
-      const b = document.createElement("button");
-      b.textContent = p === "audio" ? (d.mp3 ? "Audio (MP3)" : "Audio only") : LABELS[p];
-      if (p === "best") b.className = "primary";
-      b.addEventListener("click", () => download(p, b));
-      return b;
-    }));
-    $("card").hidden = false;
+    current = url; lastInfo = d;
+    render(d);
     status("");
   } catch (err) {
     status(err.message, true);
   } finally {
     $("go").disabled = false;
   }
-});
+}
+
+function render(d) {
+  const t = T[lang];
+  $("thumb").src = d.thumbnail || ""; $("thumb").hidden = !d.thumbnail;
+  $("title").textContent = d.title;
+  $("meta").textContent = [d.site, d.uploader, fmtTime(d.duration)].filter(Boolean).join(" · ");
+  $("list").replaceChildren(...d.options.map((o, i) => {
+    const row = document.createElement("div");
+    row.className = "row";
+    const name = document.createElement("div");
+    const b = document.createElement("b");
+    b.textContent = o.label;
+    const small = document.createElement("small");
+    small.textContent = ` ${o.ext.toUpperCase()} · ${o.id === "audio" ? t.audio : t.video}${i === 0 && o.id !== "audio" ? " · " + t.best : ""}`;
+    name.append(b, small);
+    const size = document.createElement("span");
+    size.className = "size";
+    size.textContent = fmtSize(o.size);
+    const btn = document.createElement("button");
+    btn.textContent = t.dl;
+    if (i === 0) btn.className = "primary";
+    btn.addEventListener("click", () => download(o.id, btn));
+    row.append(name, size, btn);
+    return row;
+  }));
+  $("card").hidden = false;
+}
 
 async function download(preset, btn) {
-  const buttons = [...$("options").querySelectorAll("button")];
+  const t = T[lang];
+  const buttons = [...$("list").querySelectorAll("button")];
   buttons.forEach(b => b.disabled = true);
-  const label = btn.textContent;
-  btn.textContent = "Preparing…";
-  status("Downloading on your computer. Bigger videos take longer, so keep this tab open.");
+  btn.textContent = t.preparing;
+  status(t.working);
   try {
     const r = await fetch(`/api/download?url=${encodeURIComponent(current)}&preset=${preset}`);
     if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || "Download failed.");
@@ -139,14 +208,19 @@ async function download(preset, btn) {
     const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: name });
     document.body.append(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 60000);
-    status(`Saved "${name}" to your Downloads folder.`);
+    status(t.saved(name));
   } catch (err) {
     status(err.message, true);
   } finally {
-    btn.textContent = label;
+    btn.textContent = t.dl;
     buttons.forEach(b => b.disabled = false);
   }
 }
+
+applyLang();
+// Opened from the bookmark button (or a shared link like http://127.0.0.1:8000/?url=...): start right away.
+const incoming = new URLSearchParams(location.search).get("url");
+if (incoming) { $("url").value = incoming; lookup(incoming); }
 </script>
 </body>
 </html>

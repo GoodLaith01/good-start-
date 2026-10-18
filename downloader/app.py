@@ -23,24 +23,55 @@ from flask import Flask, jsonify, request, send_file
 HERE = Path(__file__).parent
 HAS_FFMPEG = shutil.which("ffmpeg") is not None
 
-# With ffmpeg we can merge the best separate video + audio streams; without it we
-# fall back to the best single file that already has both.
-if HAS_FFMPEG:
-    PRESETS = {
-        "best": "bestvideo*+bestaudio/best",
-        "1080": "bestvideo*[height<=1080]+bestaudio/best[height<=1080]/best",
-        "720": "bestvideo*[height<=720]+bestaudio/best[height<=720]/best",
-        "480": "bestvideo*[height<=480]+bestaudio/best[height<=480]/best",
-        "audio": "bestaudio/best",
-    }
-else:
-    PRESETS = {
-        "best": "best",
-        "1080": "best[height<=1080]/best",
-        "720": "best[height<=720]/best",
-        "480": "best[height<=480]/best",
-        "audio": "bestaudio/best",
-    }
+def format_for(preset):
+    """yt-dlp format string for 'best', 'audio' or a height like 'h720'.
+    With ffmpeg we merge the best separate video + audio streams; without it we
+    fall back to the best single file that already has both."""
+    if preset == "audio":
+        return "bestaudio/best"
+    if preset == "best":
+        return "bestvideo*+bestaudio/best" if HAS_FFMPEG else "best"
+    if re.fullmatch(r"h\d{3,4}", preset):
+        h = preset[1:]
+        if HAS_FFMPEG:
+            return f"bestvideo*[height<={h}]+bestaudio/best[height<={h}]/best"
+        return f"best[height<={h}]/best"
+    raise BadRequest("Unknown quality option.")
+
+
+def size_of(f):
+    if not f:
+        return 0
+    return f.get("filesize") or f.get("filesize_approx") or 0
+
+
+def quality_options(formats):
+    """One option per available height (like SaveFrom's quality list), each with a size estimate."""
+    video = [f for f in formats if f.get("height") and f.get("vcodec") not in (None, "none")]
+    if not HAS_FFMPEG:
+        video = [f for f in video if f.get("acodec") not in (None, "none")]
+    audio = [f for f in formats if f.get("vcodec") in (None, "none") and f.get("acodec") not in (None, "none")]
+    best_audio = max(audio, key=lambda f: f.get("abr") or 0, default=None)
+    extra = size_of(best_audio) if HAS_FFMPEG else 0
+    options = []
+    for h in sorted({f["height"] for f in video}, reverse=True):
+        if h < 144:
+            continue
+        top = max((f for f in video if f["height"] == h), key=lambda f: f.get("tbr") or 0)
+        size = size_of(top)
+        if size and top.get("acodec") in (None, "none"):
+            size += extra
+        options.append({"id": f"h{h}", "label": f"{h}p", "ext": "mp4", "size": size or None})
+    if not options:  # the site gave no heights (e.g. a direct file link): offer its best video as-is
+        best = max((f for f in formats if f.get("vcodec") != "none"), key=size_of, default=None)
+        if best:
+            options.append({"id": "best", "label": "Best", "ext": "mp4" if HAS_FFMPEG else best.get("ext", "mp4"),
+                            "size": size_of(best) or None})
+    options.append({"id": "audio", "label": "MP3" if HAS_FFMPEG else "Audio",
+                    "ext": "mp3" if HAS_FFMPEG else (best_audio or {}).get("ext", "m4a"),
+                    "size": size_of(best_audio) or None})
+    return options
+
 
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
 app = Flask(__name__)
@@ -93,19 +124,14 @@ def info():
         return jsonify(error=error_message(err)), 422
     if data.get("entries"):  # carousels and playlists: use the first item
         data = next((e for e in data["entries"] if e), data)
-    heights = sorted({f["height"] for f in data.get("formats") or []
-                      if f.get("height") and f.get("vcodec") not in (None, "none")}, reverse=True)
-    top = heights[0] if heights else None
-    presets = ["best"] + [p for p in ("1080", "720", "480") if top and top > int(p)] + ["audio"]
+    options = quality_options(data.get("formats") or [])
     return jsonify(
         title=data.get("title") or "Untitled",
         uploader=data.get("uploader") or data.get("channel") or "",
         site=data.get("extractor_key") or "",
         thumbnail=data.get("thumbnail"),
         duration=data.get("duration"),
-        best_height=top,
-        presets=presets,
-        mp3=HAS_FFMPEG,
+        options=options,
     )
 
 
@@ -113,11 +139,10 @@ def info():
 def download():
     url = clean_url(request.args.get("url"))
     preset = request.args.get("preset", "best")
-    if preset not in PRESETS:
-        raise BadRequest("Unknown quality option.")
+    fmt = format_for(preset)
     tmp = Path(tempfile.mkdtemp(prefix="grab-"))
     opts = base_opts() | {
-        "format": PRESETS[preset],
+        "format": fmt,
         "outtmpl": str(tmp / "%(title).80B [%(id)s].%(ext)s"),
         "restrictfilenames": False,
         "windowsfilenames": True,

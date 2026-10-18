@@ -13,8 +13,19 @@ tracking and no limits.
    - **Windows:** double-click `start.bat`.
    - **Mac / Linux:** run `./start.sh`.
 
-Your browser opens at http://127.0.0.1:8000. Paste a link, press **Get video**, and choose
-**Best quality**, **1080p / 720p / 480p** or **Audio (MP3)**.
+Your browser opens at http://127.0.0.1:8000. Paste a link, press **Get video**, and pick from
+the list of every quality the video has (1080p, 720p, 480p…, each with its file size) or **MP3**.
+
+## Features
+
+| SaveFrom feature | In Grab |
+|---|---|
+| One box, auto-detects the site | Yes, 1,000+ sites |
+| List of every quality with sizes | Yes |
+| Helper button / "ss" link trick | The **Grab it** bookmark button: drag it to your bookmarks bar, then click it on any video page. Links like `http://127.0.0.1:8000/?url=VIDEO_LINK` also start right away. |
+| Arabic page | Arabic / English switch (right-to-left in Arabic) |
+| MP3 audio | Yes (needs ffmpeg) |
+| Ads, pop-ups, limits | None |
 
 ## How it works
 
