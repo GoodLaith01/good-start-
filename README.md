@@ -1,1 +1,31 @@
 # good-start-
+
+**Social Hub** — watch your TikTok, Instagram and X accounts in one place.
+
+- **All** shows the three accounts side by side (stacked on phones).
+- **TikTok / Instagram / X** tabs show just one account, full width.
+- Each panel's **Open ↗** button goes to the real profile; **Open all ↗** opens all three.
+
+## Use it
+
+Open `index.html` in a browser, click **Accounts**, and enter your usernames
+(`@name`, `name`, or a profile link all work). They're saved in your browser.
+
+To pre-fill the usernames for anyone who opens the page, set them in
+`DEFAULT_ACCOUNTS` at the top of `app.js`.
+
+To put it online for free, enable GitHub Pages for this repository
+(Settings → Pages → deploy from branch, root folder).
+
+## Limits
+
+TikTok, Instagram and X don't allow their full sites to be shown inside
+another page, so each panel uses the platform's official profile embed:
+
+- **TikTok**: creator embed with your recent videos.
+- **Instagram**: profile embed; the account must be public.
+- **X**: timeline embed; X may only show it when you're signed in to X in the
+  same browser.
+
+Liking, commenting and posting still happen on the platform itself — use the
+**Open ↗** buttons for that.

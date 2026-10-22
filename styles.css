@@ -1,0 +1,296 @@
+:root {
+  --bg: #0b0d12;
+  --surface: #141821;
+  --surface-2: #1b202b;
+  --border: #262c3a;
+  --text: #e9ecf2;
+  --muted: #8b93a7;
+  --accent: #7c8cff;
+
+  --tiktok: #25f4ee;
+  --tiktok-2: #fe2c55;
+  --instagram: #e1306c;
+  --x: #e7e9ea;
+
+  --radius: 16px;
+  --topbar-h: 64px;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+[hidden] { display: none !important; }
+
+svg { width: 18px; height: 18px; fill: currentColor; flex: none; }
+
+/* ---------- Top bar ---------- */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 20px;
+  background: rgba(11, 13, 18, .85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+
+.brand-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: conic-gradient(var(--tiktok), var(--instagram), var(--x), var(--tiktok));
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin: 0 auto;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 600;
+  transition: background .15s, color .15s;
+}
+
+.tab:hover { color: var(--text); }
+
+.tab[aria-selected="true"] {
+  background: var(--surface-2);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.tab[data-view="tiktok"][aria-selected="true"] svg { color: var(--tiktok); }
+.tab[data-view="instagram"][aria-selected="true"] svg { color: var(--instagram); }
+
+.actions { display: flex; gap: 8px; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #0b0d12;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn:hover { filter: brightness(1.1); }
+
+.btn.ghost {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.btn.small { padding: 6px 12px; font-size: 13px; }
+
+/* ---------- Board ---------- */
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  padding: 16px 20px 20px;
+  height: calc(100vh - var(--topbar-h));
+}
+
+/* Single-platform views: show only the selected panel, full width. */
+.board:not([data-view="all"]) { grid-template-columns: minmax(0, 1fr); }
+.board[data-view="tiktok"] .panel:not([data-platform="tiktok"]),
+.board[data-view="instagram"] .panel:not([data-platform="instagram"]),
+.board[data-view="x"] .panel:not([data-platform="x"]) { display: none; }
+
+.board:not([data-view="all"]) .panel-body > * {
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+/* Thin brand-colored line along the top of each panel. */
+.panel-head::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+}
+.panel[data-platform="tiktok"] .panel-head::before { background: linear-gradient(90deg, var(--tiktok), var(--tiktok-2)); }
+.panel[data-platform="instagram"] .panel-head::before { background: linear-gradient(90deg, #f58529, #dd2a7b, #8134af); }
+.panel[data-platform="x"] .panel-head::before { background: var(--x); }
+
+.logo {
+  width: 34px;
+  height: 34px;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+.panel[data-platform="tiktok"] .logo { color: var(--tiktok); }
+.panel[data-platform="instagram"] .logo { color: var(--instagram); }
+.panel[data-platform="x"] .logo { color: var(--x); }
+
+.who { display: flex; flex-direction: column; min-width: 0; margin-right: auto; }
+.handle { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.panel-body iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 560px;
+  border: 0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.panel-body blockquote.tiktok-embed { margin: 0 auto !important; }
+
+.note {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  text-align: center;
+}
+
+.note a { color: var(--text); }
+
+/* Shown when no username is set yet. */
+.empty {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  height: 100%;
+  min-height: 280px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.empty svg { width: 44px; height: 44px; opacity: .5; }
+
+/* ---------- Settings dialog ---------- */
+
+dialog {
+  width: min(420px, calc(100vw - 32px));
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+}
+
+dialog::backdrop { background: rgba(0, 0, 0, .6); }
+
+dialog h2 { margin: 0 0 4px; font-size: 20px; }
+
+.hint { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
+
+dialog label {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+dialog input {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+dialog input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+
+/* ---------- Small screens ---------- */
+
+@media (max-width: 900px) {
+  .topbar {
+    height: auto;
+    flex-wrap: wrap;
+    padding: 10px 16px;
+  }
+  .tabs { order: 3; width: 100%; justify-content: space-between; }
+  .tab { flex: 1; justify-content: center; padding: 8px 6px; }
+  .actions { margin-left: auto; }
+
+  /* On phones the "All" view stacks panels; scroll down to see each one. */
+  .board {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+    padding: 12px 16px 16px;
+  }
+  .panel { height: 80vh; }
+}
+
+@media (max-width: 420px) {
+  .tab span { display: none; }
+  #open-all { display: none; }
+}
