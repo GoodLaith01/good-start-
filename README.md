@@ -17,6 +17,17 @@ To pre-fill the usernames for anyone who opens the page, set them in
 To put it online for free, enable GitHub Pages for this repository
 (Settings → Pages → deploy from branch, root folder).
 
+## Background
+
+A calm, slowly moving jungle: sunbeams through the canopy, swaying vines and
+leaves, blinking fireflies and two butterflies. It's drawn in code (no image
+files), and the motion switches off for people who turn on "reduce motion"
+on their device.
+
+To use a picture instead (for example one made in Canva), save it as
+`assets/background.jpg` and in `styles.css` set
+`--bg-image: url("assets/background.jpg");`.
+
 ## Limits
 
 TikTok, Instagram and X don't allow their full sites to be shown inside

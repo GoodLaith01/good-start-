@@ -5,9 +5,130 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Social Hub</title>
   <meta name="description" content="Watch your TikTok, Instagram and X accounts side by side.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <!-- Calm jungle scene: sunbeams through the canopy, swaying leaves and
+       vines, drifting fireflies and a couple of butterflies. Decorative only. -->
+  <div class="scene" aria-hidden="true">
+    <div class="sky"></div>
+
+    <div class="rays">
+      <span style="--x: 14%; --w: 70px;  --r: 18deg; --d: 9s;  --delay: -2s"></span>
+      <span style="--x: 30%; --w: 120px; --r: 22deg; --d: 12s; --delay: -6s"></span>
+      <span style="--x: 47%; --w: 60px;  --r: 16deg; --d: 10s; --delay: -4s"></span>
+      <span style="--x: 63%; --w: 100px; --r: 20deg; --d: 14s; --delay: -9s"></span>
+    </div>
+
+    <svg class="treeline" viewBox="0 0 1440 400" preserveAspectRatio="none">
+      <path class="t1" d="M-20,138 A48,41 0 0 1 71,161 A45,38 0 0 1 156,153 A55,48 0 0 1 261,119 A61,52 0 0 1 377,118 A58,50 0 0 1 487,120 A45,39 0 0 1 573,145 A72,62 0 0 1 711,124 A50,43 0 0 1 807,159 A77,66 0 0 1 953,155 A57,48 0 0 1 1061,183 A44,37 0 0 1 1144,175 A53,45 0 0 1 1245,125 A46,40 0 0 1 1333,137 A72,62 0 0 1 1470,128 L1460,400 L-20,400 Z"/>
+      <path class="t2" d="M-20,244 A48,41 0 0 1 72,234 A46,39 0 0 1 159,218 A33,28 0 0 1 222,225 A49,42 0 0 1 316,236 A40,34 0 0 1 392,244 A43,37 0 0 1 475,230 A52,45 0 0 1 574,250 A38,32 0 0 1 647,244 A45,39 0 0 1 733,259 A51,43 0 0 1 829,229 A57,49 0 0 1 938,221 A42,36 0 0 1 1019,253 A35,30 0 0 1 1087,239 A33,28 0 0 1 1149,248 A52,44 0 0 1 1247,244 A54,47 0 0 1 1351,231 A50,43 0 0 1 1446,245 A47,40 0 0 1 1535,238 L1460,400 L-20,400 Z"/>
+      <path class="t3" d="M-20,332 A41,35 0 0 1 58,319 A36,31 0 0 1 126,304 A36,31 0 0 1 195,325 A42,36 0 0 1 275,332 A28,24 0 0 1 329,316 A36,31 0 0 1 397,303 A32,27 0 0 1 458,308 A25,22 0 0 1 506,304 A38,32 0 0 1 578,307 A28,24 0 0 1 631,316 A40,34 0 0 1 706,305 A32,27 0 0 1 766,322 A40,34 0 0 1 842,331 A39,34 0 0 1 917,312 A31,27 0 0 1 976,315 A40,34 0 0 1 1052,336 A26,22 0 0 1 1101,308 A27,24 0 0 1 1154,310 A32,28 0 0 1 1215,323 A28,24 0 0 1 1269,302 A31,27 0 0 1 1328,315 A34,29 0 0 1 1392,336 A36,31 0 0 1 1461,321 L1460,400 L-20,400 Z"/>
+    </svg>
+
+    <svg class="vines" viewBox="0 0 1440 300" preserveAspectRatio="xMidYMin slice">
+      <g class="vine v1">
+        <path d="M180,0 C170,60 200,110 185,170 C175,210 190,240 182,280"/>
+        <use href="#leaf" x="168" y="50"  width="22" height="60" transform="rotate(-55 185 80)"/>
+        <use href="#leaf" x="168" y="120" width="22" height="60" transform="rotate(50 185 150)"/>
+        <use href="#leaf" x="160" y="200" width="22" height="60" transform="rotate(-45 175 230)"/>
+      </g>
+      <g class="vine v2">
+        <path d="M720,0 C735,40 705,80 720,120 C732,150 715,175 722,200"/>
+        <use href="#leaf" x="705" y="30"  width="20" height="55" transform="rotate(55 720 60)"/>
+        <use href="#leaf" x="705" y="110" width="20" height="55" transform="rotate(-50 720 140)"/>
+      </g>
+      <g class="vine v3">
+        <path d="M1260,0 C1250,70 1280,120 1265,190 C1255,230 1270,250 1262,290"/>
+        <use href="#leaf" x="1248" y="60"  width="22" height="60" transform="rotate(50 1265 90)"/>
+        <use href="#leaf" x="1245" y="150" width="22" height="60" transform="rotate(-55 1262 180)"/>
+        <use href="#leaf" x="1242" y="230" width="22" height="60" transform="rotate(45 1258 260)"/>
+      </g>
+      <g class="vine v4">
+        <path d="M430,0 C440,50 418,90 432,140 C440,170 428,190 434,215"/>
+        <use href="#leaf" x="418" y="40"  width="20" height="55" transform="rotate(-50 432 70)"/>
+        <use href="#leaf" x="418" y="130" width="20" height="55" transform="rotate(55 432 160)"/>
+      </g>
+      <g class="vine v5">
+        <path d="M1000,0 C990,45 1015,85 1002,130 C994,160 1006,180 1000,205"/>
+        <use href="#leaf" x="986" y="35"  width="20" height="55" transform="rotate(50 1002 65)"/>
+        <use href="#leaf" x="984" y="120" width="20" height="55" transform="rotate(-52 1000 150)"/>
+      </g>
+    </svg>
+
+    <!-- Leaf clusters in the four corners. -->
+    <svg class="fronds bl" viewBox="0 0 400 400">
+      <use href="#leaf" x="10" y="140" width="80" height="260" style="color: #2f8f5b" transform="rotate(10 50 400)"/>
+      <use href="#leaf" x="10" y="140" width="80" height="260" style="color: #3fa86a" transform="rotate(38 50 400)"/>
+      <use href="#leaf" x="10" y="160" width="80" height="240" style="color: #237a4b" transform="rotate(64 50 400)"/>
+      <use href="#leaf" x="15" y="200" width="70" height="200" style="color: #4fbf7a" transform="rotate(85 50 400)"/>
+      <use href="#leaf" x="15" y="200" width="70" height="200" style="color: #1f6b42" transform="rotate(-10 50 400)"/>
+    </svg>
+    <svg class="fronds br" viewBox="0 0 400 400">
+      <g transform="translate(400 0) scale(-1 1)">
+        <use href="#leaf" x="10" y="130" width="80" height="270" style="color: #2a8553" transform="rotate(12 50 400)"/>
+        <use href="#leaf" x="10" y="150" width="80" height="250" style="color: #44b06f" transform="rotate(40 50 400)"/>
+        <use href="#leaf" x="15" y="190" width="70" height="210" style="color: #1f6b42" transform="rotate(68 50 400)"/>
+        <use href="#leaf" x="15" y="220" width="70" height="180" style="color: #56c482" transform="rotate(-8 50 400)"/>
+      </g>
+    </svg>
+    <svg class="fronds tl" viewBox="0 0 400 400">
+      <g transform="translate(0 400) scale(1 -1)">
+        <use href="#leaf" x="10" y="160" width="70" height="240" style="color: #1d5e3a" transform="rotate(20 50 400)"/>
+        <use href="#leaf" x="10" y="180" width="70" height="220" style="color: #2a7a4c" transform="rotate(50 50 400)"/>
+        <use href="#leaf" x="15" y="200" width="60" height="200" style="color: #17502f" transform="rotate(78 50 400)"/>
+      </g>
+    </svg>
+    <svg class="fronds tr" viewBox="0 0 400 400">
+      <g transform="translate(400 400) scale(-1 -1)">
+        <use href="#leaf" x="10" y="150" width="70" height="250" style="color: #1d5e3a" transform="rotate(18 50 400)"/>
+        <use href="#leaf" x="10" y="180" width="70" height="220" style="color: #2f8556" transform="rotate(48 50 400)"/>
+        <use href="#leaf" x="15" y="210" width="60" height="190" style="color: #17502f" transform="rotate(76 50 400)"/>
+      </g>
+    </svg>
+
+    <svg class="fronds bush b-left" viewBox="0 0 400 400">
+      <use href="#leaf" x="160" y="200" width="70" height="200" style="color: #2e8a57" transform="rotate(-40 195 400)"/>
+      <use href="#leaf" x="160" y="180" width="70" height="220" style="color: #3fa86a" transform="rotate(-10 195 400)"/>
+      <use href="#leaf" x="160" y="190" width="70" height="210" style="color: #23774a" transform="rotate(22 195 400)"/>
+      <use href="#leaf" x="160" y="220" width="60" height="180" style="color: #4fbf7a" transform="rotate(50 195 400)"/>
+    </svg>
+    <svg class="fronds bush b-right" viewBox="0 0 400 400">
+      <use href="#leaf" x="160" y="210" width="70" height="190" style="color: #2a8553" transform="rotate(-45 195 400)"/>
+      <use href="#leaf" x="160" y="190" width="70" height="210" style="color: #44b06f" transform="rotate(-12 195 400)"/>
+      <use href="#leaf" x="160" y="200" width="70" height="200" style="color: #1f6b42" transform="rotate(18 195 400)"/>
+      <use href="#leaf" x="160" y="230" width="60" height="170" style="color: #56c482" transform="rotate(46 195 400)"/>
+    </svg>
+
+    <div class="fireflies">
+      <i style="--x: 8%;  --y: 62%; --d: 14s; --delay: -3s"></i>
+      <i style="--x: 19%; --y: 40%; --d: 18s; --delay: -9s"></i>
+      <i style="--x: 28%; --y: 75%; --d: 16s; --delay: -5s"></i>
+      <i style="--x: 41%; --y: 55%; --d: 20s; --delay: -12s"></i>
+      <i style="--x: 52%; --y: 82%; --d: 15s; --delay: -1s"></i>
+      <i style="--x: 61%; --y: 36%; --d: 19s; --delay: -7s"></i>
+      <i style="--x: 72%; --y: 68%; --d: 17s; --delay: -14s"></i>
+      <i style="--x: 83%; --y: 48%; --d: 21s; --delay: -4s"></i>
+      <i style="--x: 91%; --y: 78%; --d: 16s; --delay: -10s"></i>
+      <i style="--x: 35%; --y: 25%; --d: 22s; --delay: -16s"></i>
+    </div>
+
+    <div class="butterfly b1"><span></span><span></span></div>
+    <div class="butterfly b2"><span></span><span></span></div>
+
+    <svg width="0" height="0" style="position: absolute">
+      <!-- One tropical leaf, base at the bottom, colored with currentColor. -->
+      <symbol id="leaf" viewBox="0 0 60 220" preserveAspectRatio="none">
+        <path fill="currentColor" d="M30 220 C6 168 -2 92 30 0 C62 92 54 168 30 220 Z"/>
+        <path fill="none" stroke="rgba(0, 0, 0, .18)" stroke-width="2" d="M30 214 L30 12"/>
+        <path fill="none" stroke="rgba(0, 0, 0, .12)" stroke-width="1.5" d="M30 170 L12 150 M30 130 L10 108 M30 90 L14 70 M30 170 L48 150 M30 130 L50 108 M30 90 L46 70"/>
+      </symbol>
+    </svg>
+  </div>
+
   <header class="topbar">
     <div class="brand">
       <span class="brand-dot"></span>
