@@ -1,0 +1,791 @@
+:root {
+  /* Jungle palette: deep canopy greens, warm sunlight, mango and lime accents. */
+  --canopy: #0f3b2a;
+  --forest: #1f6a47;
+  --moss: #3d9466;
+  --sun: #ffe7a3;
+  --peach: #ffc46b;
+  --mint: #9be7a6;
+  --lilac: #c9f2b0;
+
+  /* Frosted-glass surfaces that sit on top of the scene. */
+  --glass: rgba(10, 42, 30, .42);
+  --glass-strong: rgba(10, 42, 30, .74);
+  --glass-line: rgba(255, 255, 255, .16);
+  --text: #f6fff4;
+  --muted: #c7e6cf;
+  --accent: linear-gradient(135deg, #ffd166, #a8e063);
+  --accent-text: #1d3a12;
+  --accent-glow: 255, 209, 102;
+  --bar: rgba(10, 42, 30, .35);
+  --shade: 5, 30, 18;
+  --tab-on-text: #14402a;
+
+  --tiktok: #25f4ee;
+  --tiktok-2: #fe2c55;
+  --instagram: #ff7aa8;
+  --x: #ffffff;
+
+  /* Optional: drop the full-size Canva image into the repo and point to it,
+     e.g. --bg-image: url("assets/background.jpg"); */
+  --bg-image: none;
+
+  --radius: 22px;
+  --topbar-h: 68px;
+  color-scheme: dark;
+}
+
+/* Night mode: moonlit sea. Same variables, cool blue palette. */
+:root[data-mode="night"] {
+  --canopy: #050b1c;
+  --glass: rgba(8, 16, 38, .45);
+  --glass-strong: rgba(8, 16, 38, .78);
+  --glass-line: rgba(200, 215, 255, .16);
+  --text: #f1f4ff;
+  --muted: #b9c3e6;
+  --accent: linear-gradient(135deg, #f4f1e6, #aebfff);
+  --accent-text: #16204a;
+  --accent-glow: 190, 205, 255;
+  --bar: rgba(6, 12, 30, .4);
+  --shade: 2, 6, 20;
+  --tab-on-text: #16204a;
+  --peach: #aebfff;
+}
+
+* { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--canopy);
+  color: var(--text);
+  transition: background-color 1.2s;
+  font: 15px/1.45 "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+svg { width: 18px; height: 18px; fill: currentColor; flex: none; }
+
+/* ---------- Background scene ---------- */
+
+.scene {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sky {
+  position: absolute;
+  inset: 0;
+  background:
+    var(--bg-image) center / cover no-repeat,
+    radial-gradient(45% 40% at 35% 0%, rgba(255, 231, 163, .6), transparent 70%),
+    radial-gradient(70% 40% at 50% 100%, rgba(190, 240, 200, .25), transparent 70%),
+    linear-gradient(180deg, #2c7a52 0%, var(--forest) 35%, #2a7d55 65%, var(--canopy) 100%);
+}
+
+/* Sunbeams slanting down through the canopy, slowly brightening and fading. */
+.rays span {
+  position: absolute;
+  top: -20vh;
+  left: var(--x);
+  width: var(--w);
+  height: 130vh;
+  background: linear-gradient(180deg, rgba(255, 236, 170, .38), rgba(255, 236, 170, 0) 85%);
+  filter: blur(10px);
+  transform: rotate(var(--r));
+  transform-origin: top center;
+  animation: shimmer var(--d) ease-in-out infinite;
+  animation-delay: var(--delay);
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: .35; }
+  50%      { opacity: 1; }
+}
+
+/* Misty rows of trees and bushes. */
+.treeline {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 55vh;
+}
+.treeline .t1 { fill: #3f8f68; opacity: .45; }
+.treeline .t2 { fill: #24694a; opacity: .7; }
+.treeline .t3 { fill: #133f2b; opacity: .9; }
+
+/* Vines hanging from the top, swinging gently. */
+.vines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 34vh;
+}
+.vine { color: #3fae6c; transform-box: fill-box; transform-origin: top center; animation: swing 7s ease-in-out infinite alternate; }
+.vine path { fill: none; stroke: #2c6e45; stroke-width: 4; stroke-linecap: round; }
+.v2 { animation-duration: 9s; animation-delay: -3s; color: #52c07c; }
+.v3 { animation-duration: 8s; animation-delay: -5s; }
+.v4 { animation-duration: 10s; animation-delay: -2s; color: #48b876; }
+.v5 { animation-duration: 8.5s; animation-delay: -6s; }
+
+@keyframes swing {
+  from { transform: rotate(-2.5deg); }
+  to   { transform: rotate(2.5deg); }
+}
+
+/* Big leaf clusters in the corners, rustling in a light breeze. */
+.fronds {
+  position: absolute;
+  width: min(42vw, 440px);
+  height: min(42vw, 440px);
+  animation: rustle 6s ease-in-out infinite alternate;
+}
+.fronds.bl { left: -40px; bottom: -40px; transform-origin: bottom left; }
+.fronds.br { right: -40px; bottom: -40px; transform-origin: bottom right; animation-delay: -2s; }
+.fronds.tl { left: -60px; top: -60px; transform-origin: top left; opacity: .85; animation-duration: 8s; }
+.fronds.tr { right: -60px; top: -60px; transform-origin: top right; opacity: .85; animation-duration: 7s; animation-delay: -4s; }
+.fronds.bush { width: min(22vw, 240px); height: min(22vw, 240px); bottom: -30px; transform-origin: bottom center; animation-duration: 5s; }
+.b-left  { left: 28%; animation-delay: -1s; }
+.b-right { right: 24%; animation-delay: -3s; }
+
+@keyframes rustle {
+  from { transform: rotate(-3deg); }
+  to   { transform: rotate(3deg); }
+}
+
+/* Fireflies that wander about and blink. */
+.fireflies i {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff6b0;
+  box-shadow: 0 0 8px 3px rgba(255, 236, 120, .8), 0 0 22px 8px rgba(255, 236, 120, .35);
+  animation: wander var(--d) ease-in-out infinite, blink 3.2s ease-in-out infinite;
+  animation-delay: var(--delay);
+}
+
+@keyframes wander {
+  0%, 100% { transform: translate(0, 0); }
+  25%      { transform: translate(40px, -30px); }
+  50%      { transform: translate(-20px, -60px); }
+  75%      { transform: translate(-50px, -20px); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: .2; }
+  50%      { opacity: 1; }
+}
+
+/* Two butterflies fluttering across the page. */
+.butterfly {
+  position: absolute;
+  width: 48px;
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  animation: flutter-a 34s linear infinite;
+}
+.butterfly span {
+  width: 22px;
+  height: 30px;
+  border-radius: 60% 40% 50% 50%;
+  background: radial-gradient(circle at 50% 40%, #ffe08a 20%, #ff8a5c 70%);
+  box-shadow: inset 0 0 0 2px rgba(80, 30, 10, .35);
+  animation: flap .28s ease-in-out infinite alternate;
+}
+.butterfly span:first-child { transform-origin: right center; border-radius: 40% 60% 50% 50%; }
+.butterfly span:last-child  { transform-origin: left center; }
+.butterfly.b2 { animation: flutter-b 42s linear infinite; animation-delay: -15s; }
+.butterfly.b2 span { background: radial-gradient(circle at 50% 40%, #b7f0ff 20%, #6c8cff 70%); }
+
+@keyframes flap {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(.25); }
+}
+
+@keyframes flutter-a {
+  0%   { transform: translate(-60px, 70vh) rotate(10deg); }
+  25%  { transform: translate(25vw, 45vh) rotate(-8deg); }
+  50%  { transform: translate(50vw, 60vh) rotate(12deg); }
+  75%  { transform: translate(75vw, 35vh) rotate(-6deg); }
+  100% { transform: translate(calc(100vw + 60px), 50vh) rotate(8deg); }
+}
+
+@keyframes flutter-b {
+  0%   { transform: translate(calc(100vw + 60px), 30vh) rotate(-10deg); }
+  30%  { transform: translate(70vw, 55vh) rotate(8deg); }
+  60%  { transform: translate(35vw, 25vh) rotate(-12deg); }
+  100% { transform: translate(-60px, 45vh) rotate(6deg); }
+}
+
+/* ---------- Day / night switching ---------- */
+
+/* Only one scene shows at a time; they crossfade, and the hidden one stops moving. */
+.scene { transition: opacity 1.2s ease, visibility 0s linear 1.2s; }
+:root[data-mode="night"] .scene.day,
+:root:not([data-mode="night"]) .scene.night { opacity: 0; visibility: hidden; }
+:root[data-mode="night"] .scene.day *,
+:root:not([data-mode="night"]) .scene.night * { animation-play-state: paused; }
+:root[data-mode="night"] .scene.night,
+:root:not([data-mode="night"]) .scene.day { transition: opacity 1.2s ease, visibility 0s; }
+
+/* ---------- Night scene: stars, moon and a calm sea ---------- */
+
+.night-sky {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(40% 30% at 72% 22%, rgba(150, 170, 230, .22), transparent 70%),
+    radial-gradient(120% 40% at 50% 62%, rgba(70, 95, 160, .45), transparent 60%),
+    linear-gradient(180deg, #02040d 0%, #060d24 30%, #0f1d44 52%, #22356a 62%, #0a1530 62.2%, #050b1c 100%);
+}
+
+/* Faint Milky Way band across the sky. */
+.milky {
+  position: absolute;
+  left: -10%;
+  top: -10vh;
+  width: 120%;
+  height: 50vh;
+  background:
+    radial-gradient(30% 40% at 25% 60%, rgba(190, 200, 255, .10), transparent 70%),
+    radial-gradient(25% 35% at 55% 45%, rgba(220, 210, 255, .08), transparent 70%),
+    radial-gradient(30% 40% at 85% 30%, rgba(190, 210, 255, .07), transparent 70%);
+  transform: rotate(-14deg);
+  filter: blur(6px);
+}
+
+/* Stars are drawn as box-shadows by app.js, in three sizes that twinkle at different speeds. */
+.stars {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  border-radius: 50%;
+  background: transparent;
+  animation: star-twinkle 7s ease-in-out infinite;
+}
+.stars.s2 { width: 1.6px; height: 1.6px; animation-duration: 5s; animation-delay: -2s; }
+.stars.s3 { width: 2.4px; height: 2.4px; animation-duration: 9s; animation-delay: -4s; }
+
+@keyframes star-twinkle {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: .55; }
+}
+
+/* A shooting star now and then. */
+.shooting {
+  position: absolute;
+  left: 18%;
+  top: 8vh;
+  width: 160px;
+  height: 1.5px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, .9), transparent);
+  border-radius: 2px;
+  transform: rotate(20deg);
+  opacity: 0;
+  animation: shoot 19s ease-in infinite;
+  animation-delay: 6s;
+}
+
+@keyframes shoot {
+  0%, 94%   { opacity: 0; transform: rotate(20deg) translateX(0); }
+  95%       { opacity: 1; }
+  100%      { opacity: 0; transform: rotate(20deg) translateX(-320px); }
+}
+
+.moon {
+  position: absolute;
+  left: 72%;
+  top: 14vh;
+  width: clamp(70px, 9vw, 130px);
+  aspect-ratio: 1;
+  margin-left: calc(clamp(70px, 9vw, 130px) / -2);
+  border-radius: 50%;
+  /* Soft dark "seas" placed roughly like the real near side of the moon, plus Tycho's bright rays. */
+  background:
+    radial-gradient(circle at 47% 85%, rgba(255, 255, 255, .55) 0 2%, transparent 5%),
+    radial-gradient(ellipse 30% 26% at 35% 30%, rgba(110, 108, 100, .38), transparent),
+    radial-gradient(ellipse 15% 13% at 58% 29%, rgba(110, 108, 100, .34), transparent),
+    radial-gradient(ellipse 19% 17% at 64% 46%, rgba(110, 108, 100, .32), transparent),
+    radial-gradient(ellipse 22% 34% at 24% 56%, rgba(110, 108, 100, .3), transparent),
+    radial-gradient(ellipse 14% 11% at 46% 70%, rgba(110, 108, 100, .24), transparent),
+    radial-gradient(ellipse 8% 8% at 79% 36%, rgba(110, 108, 100, .34), transparent),
+    radial-gradient(circle at 42% 38%, #fffef6 0%, #ece7d6 55%, #c9c2ab 100%);
+  box-shadow:
+    0 0 30px 6px rgba(255, 250, 225, .45),
+    0 0 110px 40px rgba(180, 200, 255, .18),
+    0 0 260px 120px rgba(120, 150, 230, .10),
+    inset -12px -10px 26px rgba(40, 40, 60, .22);
+  overflow: hidden;
+  animation: moon-glow 10s ease-in-out infinite;
+}
+
+/* Fine surface texture so the moon doesn't look flat. */
+.moon svg { width: 100%; height: 100%; mix-blend-mode: multiply; opacity: .45; }
+
+@keyframes moon-glow {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.06); }
+}
+
+/* Thin haze where the sky meets the sea. */
+.horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(62vh - 14px);
+  height: 28px;
+  background: linear-gradient(180deg, transparent, rgba(160, 180, 235, .22), transparent);
+  filter: blur(3px);
+}
+
+.island {
+  position: absolute;
+  left: 0;
+  top: calc(62vh - 34px);
+  width: 46vw;
+  height: 36px;
+  fill: #060c20;
+}
+
+.sea {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 62vh;
+  bottom: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(18% 60% at 72% 0%, rgba(170, 190, 245, .18), transparent 70%),
+    linear-gradient(180deg, #13244c 0%, #0a1634 30%, #050b1e 100%);
+}
+
+/* Rippled water, tilted back so the waves shrink toward the horizon. */
+.waves {
+  position: absolute;
+  left: -20%;
+  top: 0;
+  width: 140%;
+  height: 260%;
+  transform-origin: top center;
+  transform: perspective(380px) rotateX(62deg);
+  opacity: .5;
+}
+.waves svg { width: 100%; height: 100%; animation: water-drift 40s ease-in-out infinite alternate; will-change: transform; }
+
+@keyframes water-drift {
+  from { transform: translateX(-3%); }
+  to   { transform: translateX(3%); }
+}
+
+/* The moon's sparkling path on the water. */
+.moonpath {
+  position: absolute;
+  left: 72%;
+  top: 0;
+  width: 46vw;
+  height: 100%;
+  margin-left: -23vw;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cfilter id='b'%3E%3CfeGaussianBlur stdDeviation='4'/%3E%3C/filter%3E%3Cpolygon points='46,0 54,0 88,100 12,100' filter='url(%23b)'/%3E%3C/svg%3E");
+  -webkit-mask-size: 100% 100%;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cfilter id='b'%3E%3CfeGaussianBlur stdDeviation='4'/%3E%3C/filter%3E%3Cpolygon points='46,0 54,0 88,100 12,100' filter='url(%23b)'/%3E%3C/svg%3E");
+  mask-size: 100% 100%;
+  opacity: .9;
+}
+.moonpath svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  will-change: opacity, transform;
+}
+.moonpath .glint-a { animation: glint 4s ease-in-out infinite alternate; }
+.moonpath .glint-b { animation: glint 4s ease-in-out infinite alternate-reverse; }
+
+@keyframes glint {
+  from { opacity: .25; transform: translateX(-6px); }
+  to   { opacity: 1;   transform: translateX(6px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene *, .panel { animation: none !important; transition: none !important; }
+  .butterfly { display: none; }
+}
+
+/* ---------- Top bar ---------- */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 20px;
+  background: var(--bar);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-bottom: 1px solid var(--glass-line);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: .2px;
+}
+
+.brand-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: conic-gradient(var(--tiktok), var(--instagram), var(--peach), var(--mint), var(--tiktok));
+  box-shadow: 0 0 14px rgba(var(--accent-glow), .8);
+  animation: spin 12s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin: 0 auto;
+  padding: 5px;
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid var(--glass-line);
+  border-radius: 999px;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 700;
+  transition: background .2s, color .2s, transform .2s;
+}
+
+.tab:hover { color: var(--text); transform: translateY(-1px); }
+
+.tab[aria-selected="true"] {
+  background: rgba(255, 255, 255, .92);
+  color: var(--tab-on-text);
+  box-shadow: 0 6px 18px rgba(var(--shade), .3);
+}
+
+.tab[data-view="tiktok"][aria-selected="true"] svg { color: #111; }
+.tab[data-view="instagram"][aria-selected="true"] svg { color: #e1306c; }
+
+.actions { display: flex; gap: 8px; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font: inherit;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px rgba(var(--accent-glow), .3);
+  transition: transform .2s, box-shadow .2s;
+}
+
+.btn:hover { transform: translateY(-1px) scale(1.03); box-shadow: 0 10px 22px rgba(var(--accent-glow), .45); }
+
+.btn.ghost {
+  background: rgba(255, 255, 255, .08);
+  border-color: var(--glass-line);
+  color: var(--text);
+  box-shadow: none;
+}
+
+.btn.small { padding: 6px 13px; font-size: 13px; }
+
+/* Sun/moon button: shows the moon in day mode (go to night) and the sun at night. */
+.mode-toggle { padding: 9px 11px; }
+.mode-toggle svg { transition: transform .5s; }
+.mode-toggle:hover svg { transform: rotate(-20deg) scale(1.1); }
+:root[data-mode="night"] .icon-moon,
+:root:not([data-mode="night"]) .icon-sun { display: none; }
+
+/* ---------- Board ---------- */
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  padding: 18px 20px 22px;
+  height: calc(100vh - var(--topbar-h));
+}
+
+/* Single-platform views: show only the selected panel, full width. */
+.board:not([data-view="all"]) { grid-template-columns: minmax(0, 1fr); }
+.board[data-view="tiktok"] .panel:not([data-platform="tiktok"]),
+.board[data-view="instagram"] .panel:not([data-platform="instagram"]),
+.board[data-view="x"] .panel:not([data-platform="x"]) { display: none; }
+
+.board:not([data-view="all"]) .panel-body > * {
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--glass);
+  backdrop-filter: blur(10px) saturate(130%);
+  -webkit-backdrop-filter: blur(10px) saturate(130%);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius);
+  box-shadow: 0 20px 50px rgba(var(--shade), .4);
+  overflow: hidden;
+  animation: pop-in .6s cubic-bezier(.2, .9, .3, 1.2) both;
+}
+.panel:nth-child(2) { animation-delay: .08s; }
+.panel:nth-child(3) { animation-delay: .16s; }
+
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(18px) scale(.97); }
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--glass-line);
+  position: relative;
+}
+
+/* Thin brand-colored line along the top of each panel. */
+.panel-head::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+}
+.panel[data-platform="tiktok"] .panel-head::before { background: linear-gradient(90deg, var(--tiktok), var(--tiktok-2)); }
+.panel[data-platform="instagram"] .panel-head::before { background: linear-gradient(90deg, #f58529, #dd2a7b, #8134af); }
+.panel[data-platform="x"] .panel-head::before { background: linear-gradient(90deg, #fff, var(--lilac)); }
+
+.logo {
+  width: 38px;
+  height: 38px;
+  padding: 9px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .12);
+  transition: transform .3s;
+}
+.panel:hover .logo { transform: rotate(-8deg) scale(1.08); }
+.panel[data-platform="tiktok"] .logo { color: var(--tiktok); }
+.panel[data-platform="instagram"] .logo { color: var(--instagram); }
+.panel[data-platform="x"] .logo { color: var(--x); }
+
+.who { display: flex; flex-direction: column; min-width: 0; margin-right: auto; }
+.who strong { font-weight: 800; }
+.handle { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, .25) transparent;
+}
+
+.panel-body iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 560px;
+  border: 0;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.panel-body blockquote.tiktok-embed { margin: 0 auto !important; }
+
+.note {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  text-align: center;
+}
+
+.note a { color: var(--text); }
+
+/* Shown when no username is set yet. */
+.empty {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 14px;
+  height: 100%;
+  min-height: 280px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.empty svg {
+  width: 52px;
+  height: 52px;
+  opacity: .8;
+  animation: bob 4s ease-in-out infinite;
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+/* ---------- Settings dialog ---------- */
+
+dialog {
+  width: min(420px, calc(100vw - 32px));
+  padding: 26px;
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius);
+  background: var(--glass-strong);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: var(--text);
+  box-shadow: 0 30px 80px rgba(var(--shade), .55);
+}
+
+dialog::backdrop { background: rgba(var(--shade), .35); backdrop-filter: blur(4px); }
+
+dialog h2 { margin: 0 0 4px; font-size: 22px; font-weight: 800; }
+
+.hint { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
+
+dialog label {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+dialog input {
+  padding: 11px 14px;
+  border: 1px solid var(--glass-line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .08);
+  color: var(--text);
+  font: inherit;
+}
+
+dialog input::placeholder { color: rgba(199, 230, 207, .6); }
+dialog input:focus { outline: 2px solid var(--peach); outline-offset: 1px; }
+
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+
+/* ---------- Watch dialog ---------- */
+
+dialog.watch {
+  width: min(760px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+
+.watch-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+.watch-input { display: flex; gap: 8px; }
+.watch-input input { flex: 1; min-width: 0; }
+
+.watch-msg { min-height: 1.2em; margin: 8px 0 0; color: var(--peach); font-size: 13px; }
+
+.player:empty { display: none; }
+.player { margin-top: 8px; }
+
+.player iframe {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 14px;
+  background: #000;
+}
+
+/* TikTok videos are tall (9:16); keep them a phone-like size. */
+.player .tiktok-frame { max-width: 340px; aspect-ratio: 9 / 16; margin: 0 auto; }
+.player .ig-frame { max-width: 480px; height: min(78vh, 760px); margin: 0 auto; background: #fff; }
+.player .x-post { max-width: 550px; margin: 0 auto; }
+
+.recent { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--glass-line); }
+.recent-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; color: var(--muted); font-size: 13px; font-weight: 700; }
+.recent ul { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.recent li button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--glass-line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .08);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.recent li button:hover { background: rgba(255, 255, 255, .16); }
+.recent li svg { width: 14px; height: 14px; }
+
+.link-btn { padding: 0; border: 0; background: none; color: var(--muted); font: inherit; text-decoration: underline; cursor: pointer; }
+.link-btn:hover { color: var(--text); }
+
+/* ---------- Small screens ---------- */
+
+@media (max-width: 900px) {
+  .topbar {
+    height: auto;
+    flex-wrap: wrap;
+    padding: 10px 16px;
+  }
+  .tabs { order: 3; width: 100%; justify-content: space-between; }
+  .tab { flex: 1; justify-content: center; padding: 8px 6px; }
+  .actions { margin-left: auto; }
+
+  /* On phones the "All" view stacks panels; scroll down to see each one. */
+  .board {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+    padding: 12px 16px 16px;
+  }
+  .panel { height: 80vh; }
+}
+
+@media (max-width: 520px) {
+  #open-watch span { display: none; }
+}
+
+@media (max-width: 420px) {
+  .tab span { display: none; }
+  #open-all { display: none; }
+}
