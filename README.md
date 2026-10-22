@@ -4,7 +4,12 @@
 
 - **All** shows the three accounts side by side (stacked on phones).
 - **TikTok / Instagram / X** tabs show just one account, full width.
-- Each panel's **Open ↗** button goes to the real profile; **Open all ↗** opens all three.
+- Each panel's **Open ↗** button goes to the real profile.
+- **Side by side** opens the real TikTok (For You), Instagram (Reels) and X
+  (Home) in three windows filling the screen, so you can watch all three at
+  once, logged in to your own accounts. Log in once in each window and the
+  browser remembers it. If only one window opens, allow pop-ups for the site.
+  (On a computer only: phones can't show three apps at once.)
 - **▶ Watch** plays any single TikTok video, Instagram post or reel, or X post
   inside the site: paste its link and it plays right away. Recently watched
   links are kept for quick replay (in that browser only).
@@ -42,7 +47,9 @@ To use a picture instead (for example one made in Canva), save it as
 ## Limits
 
 TikTok, Instagram and X don't allow their full sites to be shown inside
-another page, so each panel uses the platform's official profile embed:
+another page, and never let you log in there, so the panels on the page use
+each platform's official public embed (use **Side by side** for your logged-in
+feeds):
 
 - **TikTok**: creator embed with your recent videos.
 - **Instagram**: profile embed; the account must be public.

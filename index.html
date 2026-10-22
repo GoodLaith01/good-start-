@@ -230,7 +230,10 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>
         <span>Watch</span>
       </button>
-      <button class="btn ghost" id="open-all" type="button" title="Open all three accounts in new tabs">Open all ↗</button>
+      <button class="btn ghost" id="side-by-side" type="button" title="Open the real TikTok, Instagram and X side by side, logged in to your accounts">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="9.5" y="4" width="5" height="16" rx="1.5"/><rect x="16" y="4" width="5" height="16" rx="1.5"/></svg>
+        <span>Side by side</span>
+      </button>
       <button class="btn" id="open-settings" type="button">Accounts</button>
     </div>
   </header>
@@ -238,36 +241,42 @@
   <main class="board" id="board" data-view="all">
     <section class="panel" data-platform="tiktok">
       <header class="panel-head">
-        <svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-tiktok"/></svg>
-        <div class="who">
-          <strong>TikTok</strong>
-          <span class="handle" data-handle></span>
-        </div>
-        <a class="btn small" data-open target="_blank" rel="noopener">Open ↗</a>
+        <a class="who-link" data-open target="_blank" rel="noopener" title="Go to TikTok">
+          <svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-tiktok"/></svg>
+          <span class="who">
+            <strong>TikTok</strong>
+            <span class="handle" data-handle></span>
+          </span>
+        </a>
+        <a class="btn small" data-open target="_blank" rel="noopener">Open TikTok ↗</a>
       </header>
       <div class="panel-body" data-body></div>
     </section>
 
     <section class="panel" data-platform="instagram">
       <header class="panel-head">
-        <svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-instagram"/></svg>
-        <div class="who">
-          <strong>Instagram</strong>
-          <span class="handle" data-handle></span>
-        </div>
-        <a class="btn small" data-open target="_blank" rel="noopener">Open ↗</a>
+        <a class="who-link" data-open target="_blank" rel="noopener" title="Go to Instagram">
+          <svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-instagram"/></svg>
+          <span class="who">
+            <strong>Instagram</strong>
+            <span class="handle" data-handle></span>
+          </span>
+        </a>
+        <a class="btn small" data-open target="_blank" rel="noopener">Open Instagram ↗</a>
       </header>
       <div class="panel-body" data-body></div>
     </section>
 
     <section class="panel" data-platform="x">
       <header class="panel-head">
-        <svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-x"/></svg>
-        <div class="who">
-          <strong>X</strong>
-          <span class="handle" data-handle></span>
-        </div>
-        <a class="btn small" data-open target="_blank" rel="noopener">Open ↗</a>
+        <a class="who-link" data-open target="_blank" rel="noopener" title="Go to X">
+          <svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-x"/></svg>
+          <span class="who">
+            <strong>X</strong>
+            <span class="handle" data-handle></span>
+          </span>
+        </a>
+        <a class="btn small" data-open target="_blank" rel="noopener">Open X ↗</a>
       </header>
       <div class="panel-body" data-body></div>
     </section>
@@ -297,6 +306,11 @@
       </div>
     </form>
   </dialog>
+
+  <div class="toast" id="toast" role="status" hidden>
+    <div class="toast-body"></div>
+    <button class="link-btn" type="button" data-dismiss>OK</button>
+  </div>
 
   <dialog id="watch" class="watch" aria-labelledby="watch-title">
     <form id="watch-form" class="watch-form" novalidate>
