@@ -1,0 +1,42 @@
+{
+  "name": "social-hub",
+  "productName": "Social Hub",
+  "version": "1.0.0",
+  "description": "TikTok, Instagram and X side by side, logged in to your own accounts.",
+  "author": "GoodLaith01",
+  "private": true,
+  "repository": "github:GoodLaith01/good-start-",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis portable --publish never"
+  },
+  "devDependencies": {
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8"
+  },
+  "build": {
+    "appId": "io.github.goodlaith01.socialhub",
+    "productName": "Social Hub",
+    "files": [
+      "main.js",
+      "preload.js",
+      "ui/**",
+      "build/icon.png"
+    ],
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "win": {
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "artifactName": "Social-Hub-Setup.exe"
+    },
+    "portable": {
+      "artifactName": "Social-Hub-Portable.exe"
+    }
+  }
+}

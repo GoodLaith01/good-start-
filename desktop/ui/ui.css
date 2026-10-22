@@ -1,0 +1,209 @@
+:root {
+  --toolbar-h: 56px;
+  --head-h: 40px;
+  --gap: 8px;
+
+  /* Day: jungle greens with mango accents (same palette as the website). */
+  --bg: #0f3b2a;
+  --bar: rgba(10, 42, 30, .55);
+  --card: rgba(10, 42, 30, .62);
+  --line: rgba(255, 255, 255, .16);
+  --text: #f6fff4;
+  --muted: #c7e6cf;
+  --accent: linear-gradient(135deg, #ffd166, #a8e063);
+  --accent-text: #1d3a12;
+  color-scheme: dark;
+}
+
+:root[data-theme="night"] {
+  --bg: #050b1c;
+  --bar: rgba(6, 12, 30, .6);
+  --card: rgba(8, 16, 38, .7);
+  --line: rgba(200, 215, 255, .16);
+  --text: #f1f4ff;
+  --muted: #b9c3e6;
+  --accent: linear-gradient(135deg, #f4f1e6, #aebfff);
+  --accent-text: #16204a;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.4 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  user-select: none;
+}
+
+svg { width: 18px; height: 18px; fill: currentColor; flex: none; }
+.sprite { position: absolute; }
+
+/* ---------- Background ---------- */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  transition: opacity .8s;
+  background:
+    radial-gradient(45% 40% at 35% 0%, rgba(255, 231, 163, .45), transparent 70%),
+    radial-gradient(30% 50% at 0% 100%, rgba(79, 191, 122, .35), transparent 70%),
+    radial-gradient(30% 50% at 100% 100%, rgba(79, 191, 122, .3), transparent 70%),
+    linear-gradient(180deg, #2c7a52 0%, #1f6a47 45%, #0f3b2a 100%);
+}
+
+:root[data-theme="night"] .backdrop {
+  background:
+    radial-gradient(1.5px 1.5px at 12% 18%, #fff, transparent),
+    radial-gradient(1px 1px at 28% 42%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 47% 12%, #fff, transparent),
+    radial-gradient(1px 1px at 63% 33%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 79% 9%, #fff, transparent),
+    radial-gradient(1px 1px at 91% 27%, #fff, transparent),
+    radial-gradient(4% 6% at 82% 14%, #fffef6, rgba(255, 250, 225, .35) 60%, transparent 100%),
+    radial-gradient(120% 40% at 50% 70%, rgba(70, 95, 160, .4), transparent 60%),
+    linear-gradient(180deg, #02040d 0%, #0f1d44 60%, #050b1c 100%);
+}
+
+/* ---------- Toolbar ---------- */
+
+.toolbar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: var(--toolbar-h);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+  background: var(--bar);
+  border-bottom: 1px solid var(--line);
+  -webkit-app-region: drag;
+}
+
+.toolbar button { -webkit-app-region: no-drag; }
+
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; }
+.brand-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: conic-gradient(#25f4ee, #ff7aa8, #ffc46b, #9be7a6, #25f4ee);
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin: 0 auto;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .08);
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tab:hover { color: var(--text); }
+.tab[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); }
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .08);
+  color: var(--text);
+  cursor: pointer;
+}
+:root[data-theme="night"] .icon-moon,
+:root:not([data-theme="night"]) .icon-sun { display: none; }
+
+/* ---------- Site headers (positioned by ui.js to match the app's layout) ---------- */
+
+.pane {
+  position: fixed;
+  top: calc(var(--toolbar-h) + var(--gap));
+  bottom: var(--gap);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  overflow: hidden;
+}
+.pane[hidden] { display: none; }
+
+.pane-head {
+  height: var(--head-h);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 6px 0 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.logo { width: 18px; height: 18px; }
+.pane[data-key="tiktok"] .logo { color: #25f4ee; }
+.pane[data-key="instagram"] .logo { color: #ff7aa8; }
+
+.pane-name { font-weight: 700; }
+
+.spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--line);
+  border-top-color: var(--text);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  visibility: hidden;
+}
+.pane.loading .spinner { visibility: visible; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.pane-tools { display: flex; gap: 2px; margin-left: auto; }
+.pane-tools button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.pane-tools button:hover:not(:disabled) { background: rgba(255, 255, 255, .12); color: var(--text); }
+.pane-tools button:disabled { opacity: .35; cursor: default; }
+.pane-tools svg { width: 17px; height: 17px; }
+
+.mute .sound-off,
+.pane.muted .mute .sound-on { display: none; }
+.pane.muted .mute .sound-off { display: block; }
+.pane.muted .mute { color: #ff9a9a; }
+
+.pane-body { flex: 1; display: grid; place-items: center; color: var(--muted); }
+
+/* While a video plays full screen the app covers everything; hide the chrome. */
+body.fullscreen .toolbar,
+body.fullscreen .pane { visibility: hidden; }
+
+/* Narrow windows: icons only in the tabs. */
+@media (max-width: 1000px) {
+  .tab { padding: 7px 10px; font-size: 0; gap: 0; }
+  .brand { font-size: 0; gap: 0; }
+}

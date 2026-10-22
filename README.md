@@ -14,6 +14,30 @@
   inside the site: paste its link and it plays right away. Recently watched
   links are kept for quick replay (in that browser only).
 
+## Desktop app (Windows)
+
+The website can only show public previews, because TikTok, Instagram and X
+don't allow logging in inside another web page. The **Social Hub app** can:
+it shows the real TikTok, Instagram and X side by side in one window, each
+logged in to your own account, so you get your feeds and the people you
+follow. You log in once in each and it stays logged in.
+
+- **Download:** the **Get the app** button on the website, or
+  [Social-Hub-Setup.exe](https://github.com/GoodLaith01/good-start-/releases/latest/download/Social-Hub-Setup.exe).
+  Windows may say "Windows protected your PC" because the app isn't signed:
+  click **More info → Run anyway**.
+- **All 3 / TikTok / Instagram / X** at the top switch between all three and
+  one at a time.
+- Each site has **back, reload, home, smaller/bigger** and **sound on/off**
+  buttons. Only TikTok has sound at first so three videos don't play over each
+  other.
+- Log in with your username/email and password. "Continue with Google"
+  usually doesn't work inside apps like this.
+
+The app's code is in `desktop/`. GitHub builds the installer automatically
+(`.github/workflows/desktop.yml`) whenever `desktop/` changes. To run it from
+the code: `cd desktop && npm install && npm start`.
+
 ## Use it
 
 Open `index.html` in a browser, click **Accounts**, and enter your usernames

@@ -243,7 +243,7 @@ function openSideBySide() {
   if (blocked) {
     showToast(`<p>Your browser blocked ${blocked} of the 3 windows. Click the blocked pop-up icon at the right of the address bar, choose <b>Always allow pop-ups</b> for this site, then press Side by side again.</p><p>Or open them yourself: ${feedLinks()}</p>`);
   } else {
-    showToast(`<p>Opened TikTok, Instagram and X side by side. Log in once in each window and your browser will remember it.</p>`);
+    showToast(`<p>Opened TikTok, Instagram and X side by side. Log in once in each window and your browser will remember it.</p><p>Want all three in one window? <a href="${document.getElementById("get-app").href}">Get the Windows app</a>.</p>`);
   }
 }
 
