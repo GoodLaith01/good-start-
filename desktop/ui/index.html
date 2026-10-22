@@ -33,6 +33,10 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 8.5a15 15 0 0 1 20 0M5.5 12a10 10 0 0 1 13 0M9 15.5a5 5 0 0 1 6 0M3 3l18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         <span class="offline-label">Offline</span>
       </span>
+      <button class="offline-chip muted-chip" id="muted-all" type="button" title="Turn sound back on (Ctrl+Shift+M)" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span class="offline-label">Sound off</span>
+      </button>
       <button class="icon-btn accounts-btn" id="accounts" type="button" title="Accounts (Ctrl+Shift+A)">
         <span class="dots" aria-hidden="true"><i data-key="tiktok"></i><i data-key="instagram"></i><i data-key="x"></i></span>
         <span class="sr">Accounts</span>
@@ -40,6 +44,10 @@
       <button class="icon-btn" id="help" type="button" title="Keyboard shortcuts (Ctrl+/)">
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6 10h1.5M9.5 10H11M13 10h1.5M16.5 10H18M8 14h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
         <span class="sr">Keyboard shortcuts</span>
+      </button>
+      <button class="icon-btn" id="settings" type="button" title="Settings (Ctrl+,)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8" cy="17" r="2.3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        <span class="sr">Settings</span>
       </button>
       <button class="icon-btn" id="theme" type="button" title="Switch day / night (Ctrl+Shift+L)">
         <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1z"/></svg>
@@ -51,6 +59,8 @@
 
   <!-- One header and frame per site; the site itself is drawn by the app inside the frame. -->
   <main id="panes"></main>
+  <!-- Drag the space between two columns to resize them; double-click to even them out. -->
+  <div id="dividers"></div>
 
   <template id="pane-template">
     <section class="pane">
@@ -133,6 +143,56 @@
       </div>
     </div>
   </div>
+
+  <div class="overlay" id="settings-panel" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <h1 id="settings-title">Settings</h1>
+      <p class="sheet-lead">Make Social Hub work the way you like.</p>
+
+      <h2 class="sheet-section">Columns in the All view</h2>
+      <ul class="column-list" id="column-list"></ul>
+      <p class="hint">Tip: drag the space between two columns to make one wider. Double-click it to even them out.
+        <button type="button" class="link" id="reset-widths">Even out now</button></p>
+
+      <h2 class="sheet-section">Everyday</h2>
+      <div class="switches">
+        <label class="switch-row">
+          <span><strong>Keep running in the background</strong><small>Closing the window keeps Social Hub in the tray, so alerts still come in. Sound turns off.</small></span>
+          <input type="checkbox" data-setting="background" role="switch">
+          <span class="switch" aria-hidden="true"></span>
+        </label>
+        <label class="switch-row">
+          <span><strong>Open when I sign in to my computer</strong><small>Starts quietly in the tray.</small></span>
+          <input type="checkbox" data-setting="startup" role="switch">
+          <span class="switch" aria-hidden="true"></span>
+        </label>
+        <label class="switch-row">
+          <span><strong>Reopen where I left off</strong><small>Each site opens on the last page you had open.</small></span>
+          <input type="checkbox" data-setting="restore" role="switch">
+          <span class="switch" aria-hidden="true"></span>
+        </label>
+      </div>
+
+      <div class="sheet-actions">
+        <button type="button" class="primary" id="settings-done">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <template id="column-template">
+    <li class="column">
+      <span class="logo-wrap"><svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><use/></svg></span>
+      <strong class="column-name"></strong>
+      <span class="column-move">
+        <button type="button" data-move="-1" title="Move left"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button type="button" data-move="1" title="Move right"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </span>
+      <label class="mini-switch" title="Show in the All view">
+        <input type="checkbox" role="switch">
+        <span class="switch" aria-hidden="true"></span>
+      </label>
+    </li>
+  </template>
 
   <template id="account-template">
     <li class="account">

@@ -8,7 +8,7 @@
 
 const {
   app, BrowserWindow, WebContentsView, ipcMain, shell, session, Menu, dialog,
-  nativeImage, screen, clipboard,
+  nativeImage, screen, clipboard, Tray, Notification,
 } = require("electron");
 const fs = require("fs");
 const path = require("path");
@@ -81,6 +81,15 @@ const state = {
   zoom: { tiktok: 1, instagram: 1, x: 1 },
   notifications: true,
   welcomed: false,
+  muteAll: false,
+  order: [...KEYS], // column order in the All view
+  hidden: { tiktok: false, instagram: false, x: false }, // left out of the All view
+  widths: { tiktok: 1, instagram: 1, x: 1 }, // relative column widths
+  background: true, // closing the window keeps the app in the tray
+  startup: false, // open (in the tray) when you sign in to Windows
+  restore: true, // reopen each site where you left off
+  lastUrl: {},
+  trayHinted: false,
   bounds: null,
 };
 
@@ -93,8 +102,20 @@ function loadSettings() {
       if (typeof saved.muted?.[key] === "boolean") state.muted[key] = saved.muted[key];
       if (typeof saved.zoom?.[key] === "number") state.zoom[key] = clampZoom(saved.zoom[key]);
     }
-    if (typeof saved.notifications === "boolean") state.notifications = saved.notifications;
-    if (typeof saved.welcomed === "boolean") state.welcomed = saved.welcomed;
+    for (const name of ["notifications", "welcomed", "muteAll", "background", "startup", "restore", "trayHinted"]) {
+      if (typeof saved[name] === "boolean") state[name] = saved[name];
+    }
+    if (Array.isArray(saved.order) && saved.order.length === KEYS.length && KEYS.every((k) => saved.order.includes(k))) {
+      state.order = saved.order;
+    }
+    for (const key of KEYS) {
+      if (typeof saved.hidden?.[key] === "boolean") state.hidden[key] = saved.hidden[key];
+      if (typeof saved.widths?.[key] === "number") state.widths[key] = clampWidth(saved.widths[key]);
+      if (typeof saved.lastUrl?.[key] === "string" && hostMatches(saved.lastUrl[key], SITES[key].hosts)) {
+        state.lastUrl[key] = saved.lastUrl[key];
+      }
+    }
+    if (KEYS.every((k) => state.hidden[k])) state.hidden[KEYS[0]] = false;
     if (saved.bounds && onScreen(saved.bounds)) state.bounds = saved.bounds;
   } catch {}
 }
@@ -109,6 +130,10 @@ let saveTimer;
 function saveSettings() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(writeSettings, 300);
+}
+
+function clampWidth(w) {
+  return Math.min(3, Math.max(0.4, w));
 }
 
 function clampZoom(z) {
@@ -146,8 +171,12 @@ let activeKey = null; // the site you last clicked or typed in
 let laidOut = ""; // window size the sites were last placed for
 let online = true;
 
+function allKeys() {
+  return state.order.filter((key) => !state.hidden[key]);
+}
+
 function shownKeys() {
-  return state.mode === "all" ? KEYS : [state.mode];
+  return state.mode === "all" ? allKeys() : [state.mode];
 }
 
 function currentKey() {
@@ -184,7 +213,9 @@ function createWindow() {
     },
   });
   if (state.bounds?.maximized) win.maximize();
-  win.once("ready-to-show", () => win.show());
+  // Opened at sign-in: start quietly in the tray.
+  const startHidden = process.argv.includes("--hidden") && state.background;
+  win.once("ready-to-show", () => !startHidden && win.show());
   win.loadFile(path.join(__dirname, "ui", "index.html"));
 
   // The toolbar page never navigates or opens windows itself.
@@ -200,11 +231,27 @@ function createWindow() {
   for (const event of ["resize", "resized", "maximize", "unmaximize", "restore", "enter-full-screen", "leave-full-screen"]) {
     win.on(event, layout);
   }
-  win.on("close", () => {
+  win.on("close", (e) => {
     state.bounds = { ...win.getNormalBounds(), maximized: win.isMaximized() };
+    if (state.background && tray && !quitting) {
+      // Keep running in the tray so alerts keep coming.
+      e.preventDefault();
+      if (win.isFullScreen()) win.setFullScreen(false);
+      win.hide();
+      if (!state.trayHinted && Notification.isSupported()) {
+        state.trayHinted = true;
+        new Notification({
+          title: "Social Hub is still running",
+          body: "You'll still get alerts. Open it from the tray icon, or right-click it to quit.",
+          icon: path.join(__dirname, "build", "icon.png"),
+        }).show();
+      }
+    }
     clearTimeout(saveTimer);
     writeSettings();
   });
+  win.on("hide", layout);
+  win.on("show", layout);
   win.webContents.on("did-finish-load", layout);
 }
 
@@ -326,6 +373,7 @@ function createSiteView(key) {
     if (unread !== live[key].unread) {
       live[key].unread = unread;
       sendState();
+      updateTray();
     }
   });
   // The site you click or type in becomes the one shortcuts act on.
@@ -339,7 +387,16 @@ function createSiteView(key) {
   wc.on("did-finish-load", () => wc.setZoomFactor(state.zoom[key]));
   wc.on("context-menu", (_e, params) => showContextMenu(key, params));
 
-  wc.loadURL(site.home);
+  // Remember the page you're on, so the app can reopen it next time.
+  const remember = (url) => {
+    if (!hostMatches(url, site.hosts) || /\/(login|accounts\/login|i\/flow)/.test(url)) return;
+    state.lastUrl[key] = url;
+    saveSettings();
+  };
+  wc.on("did-navigate", (_e, url) => remember(url));
+  wc.on("did-navigate-in-page", (_e, url, isMainFrame) => isMainFrame && remember(url));
+
+  wc.loadURL((state.restore && state.lastUrl[key]) || site.home);
 }
 
 async function checkAccount(key) {
@@ -417,14 +474,17 @@ function paneRects(W, H) {
   const shown = shownKeys();
   const n = shown.length;
   const { toolbar, head, headGap, gap } = SIZES;
-  const width = Math.floor((W - gap * (n + 1)) / n);
+  const room = W - gap * (n + 1);
+  const total = shown.reduce((sum, key) => sum + (n > 1 ? state.widths[key] : 1), 0);
   const top = toolbar + gap;
   const bodyTop = top + head + headGap;
   const rects = {};
+  let x = gap;
   shown.forEach((key, i) => {
-    const x = gap + i * (width + gap);
     // The last column takes any leftover pixels.
-    rects[key] = { x, width: i === n - 1 ? W - gap - x : width, bodyTop, bodyHeight: Math.max(0, H - bodyTop - gap) };
+    const width = i === n - 1 ? W - gap - x : Math.floor((room * (n > 1 ? state.widths[key] : 1)) / total);
+    rects[key] = { x, width, bodyTop, bodyHeight: Math.max(0, H - bodyTop - gap) };
+    x += width + gap;
   });
   return rects;
 }
@@ -452,7 +512,8 @@ function layout() {
     }
     const drawable = live[key].painted && !live[key].error && (!overlay || fullscreenKey);
     view.setVisible(visible && drawable);
-    view.webContents.setAudioMuted(state.muted[key] || !visible);
+    // Closing to the tray silences everything.
+    view.webContents.setAudioMuted(state.muted[key] || state.muteAll || !visible || !win.isVisible());
   }
   sendState();
 }
@@ -470,6 +531,11 @@ function sendState() {
     theme: state.theme,
     notifications: state.notifications,
     welcomed: state.welcomed,
+    muteAll: state.muteAll,
+    order: state.order,
+    hidden: state.hidden,
+    allCount: allKeys().length,
+    settings: { background: state.background, startup: state.startup, restore: state.restore },
     overlay,
     online,
     active: state.mode === "all" ? activeKey : null,
@@ -487,6 +553,7 @@ function sendState() {
         width: rect?.width ?? 0,
         muted: state.muted[key],
         zoom: state.zoom[key],
+        share: state.widths[key],
         loading: wc.isLoading(),
         painted: l.painted,
         error: l.error,
@@ -529,6 +596,83 @@ function setMode(mode) {
 function setOverlay(name) {
   overlay = name;
   layout();
+}
+
+// Ctrl+Tab: All, then each site in column order.
+function cycleMode(step) {
+  const modes = ["all", ...state.order];
+  const i = modes.indexOf(state.mode);
+  setMode(modes[(i + step + modes.length) % modes.length]);
+}
+
+function setMuteAll(on) {
+  state.muteAll = on;
+  saveSettings();
+  layout();
+  updateTray();
+}
+
+// ---------- Running in the background ----------
+
+let tray = null;
+let quitting = false;
+let unreadTotal = 0;
+
+function showWindow(mode) {
+  if (!win) return;
+  if (mode) setMode(mode);
+  if (win.isMinimized()) win.restore();
+  win.show();
+  win.focus();
+}
+
+function createTray() {
+  if (tray || process.platform === "darwin") return;
+  const icon = nativeImage.createFromPath(path.join(__dirname, "build", "icon.png")).resize({ width: 16, height: 16 });
+  tray = new Tray(icon);
+  tray.on("click", () => showWindow());
+  updateTray();
+}
+
+function updateTray(image) {
+  if (!tray) return;
+  if (image) tray.setImage(image);
+  tray.setToolTip(unreadTotal ? `Social Hub: ${unreadTotal} new` : "Social Hub");
+  tray.setContextMenu(Menu.buildFromTemplate([
+    { label: "Open Social Hub", click: () => showWindow() },
+    { type: "separator" },
+    ...state.order.map((key) => ({
+      label: live[key].unread ? `${SITES[key].name} (${live[key].unread} new)` : SITES[key].name,
+      click: () => showWindow(key),
+    })),
+    { type: "separator" },
+    { label: "Mute all sound", type: "checkbox", checked: state.muteAll, click: (item) => setMuteAll(item.checked) },
+    { label: "Settings", click: () => (showWindow(), setOverlay("settings")) },
+    { type: "separator" },
+    { label: "Quit Social Hub", click: () => app.quit() },
+  ]));
+}
+
+// Open at sign-in, straight to the tray. The portable app points Windows at
+// its own .exe rather than the temporary copy it runs from.
+function applyStartup() {
+  if (process.platform === "linux") return;
+  try {
+    app.setLoginItemSettings({
+      openAtLogin: state.startup,
+      path: process.env.PORTABLE_EXECUTABLE_FILE || process.execPath,
+      args: ["--hidden"],
+    });
+  } catch {}
+}
+
+function setSetting(name, value) {
+  if (!["background", "startup", "restore"].includes(name) || typeof value !== "boolean") return;
+  state[name] = value;
+  if (name === "startup") applyStartup();
+  if (name === "background") value ? createTray() : (tray?.destroy(), (tray = null));
+  saveSettings();
+  sendState();
 }
 
 // ---------- Site actions ----------
@@ -707,11 +851,15 @@ function handleShortcut(input, sourceKey) {
     if (k === "0") return paneAction(target, "zoom-reset"), true;
     if (k === "m") return paneAction(target, "mute"), true;
     if (k === "/") return setOverlay(overlay === "shortcuts" ? null : "shortcuts"), true;
+    if (k === ",") return setOverlay(overlay === "settings" ? null : "settings"), true;
+    if (k === "Tab") return cycleMode(1), true;
   }
+  if (mod && input.shift && k === "Tab") return cycleMode(-1), true;
   if (mod && input.shift && !input.alt) {
     if (k === "R") return KEYS.forEach((key) => paneAction(key, "reload")), true;
     if (k === "L") return setTheme(state.theme === "night" ? "day" : "night"), true;
     if (k === "A") return setOverlay(overlay === "accounts" ? null : "accounts"), true;
+    if (k === "M") return setMuteAll(!state.muteAll), true;
   }
   if (input.alt && !mod && !input.shift) {
     if (k === "ArrowLeft") return paneAction(target, "back"), true;
@@ -737,7 +885,7 @@ ipcMain.on("set-theme", (_e, theme) => {
 ipcMain.on("pane", (_e, key, action) => paneAction(key, action));
 
 ipcMain.on("overlay", (_e, name) => {
-  if (name === null || name === "accounts" || name === "shortcuts") setOverlay(name);
+  if (name === null || ["accounts", "shortcuts", "settings"].includes(name)) setOverlay(name);
 });
 
 ipcMain.on("welcomed", () => {
@@ -760,8 +908,11 @@ ipcMain.on("online", (_e, isOnline) => {
 });
 
 // The taskbar icon shows how many new alerts are waiting across all sites.
-ipcMain.on("badge", (_e, count, dataUrl) => {
+ipcMain.on("badge", (_e, count, dataUrl, trayUrl) => {
   if (!win || !Number.isInteger(count)) return;
+  unreadTotal = count;
+  if (typeof trayUrl === "string" && trayUrl.startsWith("data:image/png")) updateTray(nativeImage.createFromDataURL(trayUrl));
+  else updateTray();
   if (process.platform === "win32") {
     const image = count > 0 && typeof dataUrl === "string" && dataUrl.startsWith("data:image/png")
       ? nativeImage.createFromDataURL(dataUrl) : null;
@@ -771,6 +922,43 @@ ipcMain.on("badge", (_e, count, dataUrl) => {
   }
 });
 
+ipcMain.on("set-setting", (_e, name, value) => setSetting(name, value));
+
+ipcMain.on("mute-all", (_e, on) => setMuteAll(!!on));
+
+ipcMain.on("set-order", (_e, order) => {
+  if (!Array.isArray(order) || order.length !== KEYS.length || !KEYS.every((k) => order.includes(k))) return;
+  state.order = order;
+  saveSettings();
+  layout();
+  updateTray();
+});
+
+ipcMain.on("set-hidden", (_e, key, hide) => {
+  if (!KEYS.includes(key)) return;
+  // The All view always keeps at least one site.
+  if (hide && allKeys().length <= 1) return sendState();
+  state.hidden[key] = !!hide;
+  saveSettings();
+  layout();
+});
+
+// Dragging the space between two columns: weights for each shown site.
+ipcMain.on("set-widths", (_e, widths) => {
+  if (!widths || typeof widths !== "object") return;
+  for (const key of KEYS) {
+    if (typeof widths[key] === "number" && Number.isFinite(widths[key])) state.widths[key] = clampWidth(widths[key]);
+  }
+  saveSettings();
+  layout();
+});
+
+ipcMain.on("reset-widths", () => {
+  for (const key of KEYS) state.widths[key] = 1;
+  saveSettings();
+  layout();
+});
+
 ipcMain.on("ready", sendState);
 
 // ---------- Start ----------
@@ -778,13 +966,7 @@ ipcMain.on("ready", sendState);
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
-  app.on("second-instance", () => {
-    if (win) {
-      if (win.isMinimized()) win.restore();
-      win.show();
-      win.focus();
-    }
-  });
+  app.on("second-instance", () => showWindow());
 
   // Nothing inside the app may embed other pages or open unknown windows.
   app.on("web-contents-created", (_e, contents) => {
@@ -796,7 +978,12 @@ if (!app.requestSingleInstanceLock()) {
     if (process.platform !== "darwin") Menu.setApplicationMenu(null);
     loadSettings();
     createWindow();
+    if (state.background) createTray();
+    applyStartup();
   });
 
+  app.on("before-quit", () => {
+    quitting = true;
+  });
   app.on("window-all-closed", () => app.quit());
 }

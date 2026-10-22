@@ -42,8 +42,14 @@ follow. You log in once in each and it stays logged in.
 - If a site can't load (no internet, site down), its column says why and
   tries again by itself. It reconnects right away when your internet comes
   back.
-- **Keyboard:** Ctrl+1–4 switch views, Alt+←/→ back and forward, Ctrl+R
-  reload, Ctrl+M sound, Ctrl+Shift+L day/night. Ctrl+/ shows them all.
+- **Settings** (the sliders button): choose which sites show in the All view
+  and in what order, keep the app running in the tray when you close the
+  window (alerts keep coming, sound turns off), open it when you sign in to
+  your computer, and reopen each site where you left off. Drag the space
+  between two columns to make one wider; double-click it to even them out.
+- **Keyboard:** Ctrl+1–4 switch views, Ctrl+Tab next view, Alt+←/→ back and
+  forward, Ctrl+R reload, Ctrl+M sound, Ctrl+Shift+M mute everything,
+  Ctrl+Shift+L day/night, Ctrl+, settings. Ctrl+/ shows them all.
 - Log in with your username/email and password. "Continue with Google"
   usually doesn't work inside apps like this.
 

@@ -273,8 +273,8 @@ body:not(.ready) > :not(.backdrop) { opacity: 0; }
   color: #fff;
 }
 .logo-wrap .logo { width: 16px; height: 16px; }
-.pane[data-key="tiktok"] .logo-wrap, .account[data-key="tiktok"] .logo-wrap { color: #fff; filter: drop-shadow(1.5px 1px 0 #fe2c55) drop-shadow(-1px -1px 0 #25f4ee); background: #000; }
-.pane[data-key="instagram"] .logo-wrap, .account[data-key="instagram"] .logo-wrap { background: linear-gradient(45deg, #f9ce34, #ee2a7b 50%, #6228d7); }
+.pane[data-key="tiktok"] .logo-wrap, .account[data-key="tiktok"] .logo-wrap, .column[data-key="tiktok"] .logo-wrap { color: #fff; filter: drop-shadow(1.5px 1px 0 #fe2c55) drop-shadow(-1px -1px 0 #25f4ee); background: #000; }
+.pane[data-key="instagram"] .logo-wrap, .account[data-key="instagram"] .logo-wrap, .column[data-key="instagram"] .logo-wrap { background: linear-gradient(45deg, #f9ce34, #ee2a7b 50%, #6228d7); }
 .logo-wrap.big { width: 40px; height: 40px; border-radius: 12px; }
 .logo-wrap.big .logo { width: 22px; height: 22px; }
 
@@ -525,6 +525,89 @@ body.fullscreen .pane { visibility: hidden; }
 @container (max-width: 420px) {
   .pane-tools [data-action="forward"], .pane-tools [data-action="home"] { display: none; }
 }
-@container (max-width: 300px) {
-  .pane-name { display: none; }
+@container (max-width: 340px) {
+  .pane-name, .pane-head .connect-chip { display: none; }
 }
+
+/* ---------- Toolbar: sound-off chip ---------- */
+
+.muted-chip { cursor: pointer; font: inherit; font-weight: 600; font-size: 13px; }
+.muted-chip:hover { background: rgba(255, 90, 90, .28); }
+
+/* ---------- Resizing columns ---------- */
+
+.divider {
+  position: fixed;
+  top: calc(var(--toolbar) + var(--gap));
+  bottom: var(--gap);
+  cursor: col-resize;
+  -webkit-app-region: no-drag;
+}
+.divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 44px;
+  border-radius: 4px;
+  background: var(--line-strong);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity .2s, height .2s var(--ease), background .2s;
+}
+.divider:hover::after, .divider.dragging::after { opacity: 1; height: 72px; background: var(--accent-solid); }
+body.resizing, body.resizing * { cursor: col-resize !important; }
+
+/* ---------- Settings ---------- */
+
+.sheet-section {
+  margin: 4px 0 10px;
+  color: var(--faint);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.column-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.column {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--raised);
+  text-align: left;
+  transition: opacity .2s;
+}
+.column.off .logo-wrap, .column.off .column-name { opacity: .45; }
+.column-name { flex: 1; }
+.column-move { display: flex; gap: 2px; }
+.column-move button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.column-move button:hover:not(:disabled) { background: var(--raised-hover); color: var(--text); }
+.column-move button:disabled { opacity: .25; cursor: default; }
+.column-move svg { width: 16px; height: 16px; }
+.mini-switch { display: flex; cursor: pointer; }
+.mini-switch input { position: absolute; opacity: 0; pointer-events: none; }
+.mini-switch input:checked + .switch { background: #4cc77a; }
+.mini-switch input:checked + .switch::after { transform: translateX(18px); }
+.mini-switch input:disabled + .switch { opacity: .5; cursor: not-allowed; }
+.mini-switch input:focus-visible + .switch { outline: 2px solid var(--accent-solid); outline-offset: 2px; }
+
+.hint { margin: 10px 0 22px; color: var(--faint); font-size: 12.5px; text-align: left; }
+.link { padding: 0; border: 0; background: none; color: var(--accent-solid); font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+
+.switches { display: grid; gap: 8px; margin-bottom: 22px; }
