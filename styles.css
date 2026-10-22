@@ -707,6 +707,59 @@ dialog input:focus { outline: 2px solid var(--peach); outline-offset: 1px; }
 
 .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
 
+/* ---------- Watch dialog ---------- */
+
+dialog.watch {
+  width: min(760px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+
+.watch-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+.watch-input { display: flex; gap: 8px; }
+.watch-input input { flex: 1; min-width: 0; }
+
+.watch-msg { min-height: 1.2em; margin: 8px 0 0; color: var(--peach); font-size: 13px; }
+
+.player:empty { display: none; }
+.player { margin-top: 8px; }
+
+.player iframe {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 14px;
+  background: #000;
+}
+
+/* TikTok videos are tall (9:16); keep them a phone-like size. */
+.player .tiktok-frame { max-width: 340px; aspect-ratio: 9 / 16; margin: 0 auto; }
+.player .ig-frame { max-width: 480px; height: min(78vh, 760px); margin: 0 auto; background: #fff; }
+.player .x-post { max-width: 550px; margin: 0 auto; }
+
+.recent { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--glass-line); }
+.recent-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; color: var(--muted); font-size: 13px; font-weight: 700; }
+.recent ul { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.recent li button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--glass-line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .08);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.recent li button:hover { background: rgba(255, 255, 255, .16); }
+.recent li svg { width: 14px; height: 14px; }
+
+.link-btn { padding: 0; border: 0; background: none; color: var(--muted); font: inherit; text-decoration: underline; cursor: pointer; }
+.link-btn:hover { color: var(--text); }
+
 /* ---------- Small screens ---------- */
 
 @media (max-width: 900px) {
@@ -726,6 +779,10 @@ dialog input:focus { outline: 2px solid var(--peach); outline-offset: 1px; }
     padding: 12px 16px 16px;
   }
   .panel { height: 80vh; }
+}
+
+@media (max-width: 520px) {
+  #open-watch span { display: none; }
 }
 
 @media (max-width: 420px) {

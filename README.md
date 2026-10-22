@@ -5,6 +5,9 @@
 - **All** shows the three accounts side by side (stacked on phones).
 - **TikTok / Instagram / X** tabs show just one account, full width.
 - Each panel's **Open ↗** button goes to the real profile; **Open all ↗** opens all three.
+- **▶ Watch** plays any single TikTok video, Instagram post or reel, or X post
+  inside the site: paste its link and it plays right away. Recently watched
+  links are kept for quick replay (in that browser only).
 
 ## Use it
 
@@ -45,6 +48,9 @@ another page, so each panel uses the platform's official profile embed:
 - **Instagram**: profile embed; the account must be public.
 - **X**: timeline embed; X may only show it when you're signed in to X in the
   same browser.
+- **Watch**: TikTok short links (`vm.tiktok.com/…`) can't be read by the page;
+  open them first and copy the full link with `/video/` in it. Private posts
+  can't be shown.
 
 Liking, commenting and posting still happen on the platform itself — use the
 **Open ↗** buttons for that.

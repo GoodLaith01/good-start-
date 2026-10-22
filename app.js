@@ -194,6 +194,176 @@ document.getElementById("open-all").addEventListener("click", () => {
   }
 });
 
+// ---------- Watch a single video or post ----------
+
+const RECENT_KEY = "social-hub-recent";
+const RECENT_MAX = 12;
+const watchDialog = document.getElementById("watch");
+const watchForm = document.getElementById("watch-form");
+const watchMsg = document.getElementById("watch-msg");
+const player = document.getElementById("player");
+
+// Reads a pasted TikTok, Instagram or X link. Returns
+// { platform, id, kind, url, who } or { error }.
+function parsePostLink(text) {
+  const raw = String(text || "").trim();
+  if (!raw) return { error: "Paste a link first." };
+
+  let url;
+  try {
+    url = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`);
+  } catch {
+    return { error: "That doesn't look like a link." };
+  }
+
+  const host = url.hostname.replace(/^(www|m|mobile)\./, "");
+  const path = url.pathname;
+  const clean = `https://${url.hostname}${path}`;
+  let m;
+
+  if (host === "tiktok.com" && (m = path.match(/\/(?:video|photo)\/(\d+)/))) {
+    const who = path.match(/^\/@([\w.]+)/);
+    return { platform: "tiktok", id: m[1], url: clean, who: who && `@${who[1]}` };
+  }
+  if (host === "vm.tiktok.com" || host === "vt.tiktok.com" || (host === "tiktok.com" && path.startsWith("/t/"))) {
+    return { error: "That's a TikTok short link. Open it first, then copy the full link (the one with /video/ in it)." };
+  }
+  if (host === "instagram.com" && (m = path.match(/^\/(?:[\w.]+\/)?(p|reels?|tv)\/([\w-]+)/))) {
+    const kind = m[1].startsWith("reel") ? "reel" : "p";
+    return { platform: "instagram", id: m[2], kind, url: `https://www.instagram.com/${kind}/${m[2]}/` };
+  }
+  if ((host === "x.com" || host === "twitter.com") && (m = path.match(/^\/(\w+)\/status(?:es)?\/(\d+)/))) {
+    return { platform: "x", id: m[2], url: `https://x.com/${m[1]}/status/${m[2]}`, who: `@${m[1]}` };
+  }
+  return { error: "Paste a link to a TikTok video, an Instagram post or reel, or an X post." };
+}
+
+function playPost(post) {
+  player.innerHTML = "";
+
+  if (post.platform === "tiktok") {
+    player.innerHTML = `<iframe class="tiktok-frame" title="TikTok video"
+      src="https://www.tiktok.com/player/v1/${post.id}?description=1&music_info=1&rel=0"
+      allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+  } else if (post.platform === "instagram") {
+    player.innerHTML = `<iframe class="ig-frame" title="Instagram ${post.kind === "reel" ? "reel" : "post"}"
+      src="https://www.instagram.com/${post.kind}/${post.id}/embed/captioned/" allowfullscreen></iframe>`;
+  } else {
+    const holder = document.createElement("div");
+    holder.className = "x-post";
+    holder.textContent = "Loading post…";
+    player.appendChild(holder);
+    loadScript("https://platform.twitter.com/widgets.js").then(() => {
+      const widgets = window.twttr?.widgets;
+      if (!widgets) return (holder.textContent = "X didn't load. Use the link below to open the post.");
+      holder.textContent = "";
+      widgets.createTweet(post.id, holder, { theme: "dark", align: "center", dnt: true }).then((el) => {
+        if (!el) holder.textContent = "This post can't be shown here (it may be deleted or private).";
+      });
+    });
+  }
+
+  const note = document.createElement("p");
+  note.className = "note";
+  const link = document.createElement("a");
+  link.href = post.url;
+  link.target = "_blank";
+  link.rel = "noopener";
+  link.textContent = `Open on ${PLATFORMS[post.platform].name} ↗`;
+  note.append("Not playing? ", link);
+  player.appendChild(note);
+
+  addRecent(post);
+}
+
+// ---- Recently watched (kept in this browser only) ----
+
+function loadRecent() {
+  try {
+    const list = JSON.parse(localStorage.getItem(RECENT_KEY));
+    return Array.isArray(list) ? list : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRecent(list) {
+  try {
+    localStorage.setItem(RECENT_KEY, JSON.stringify(list));
+  } catch {}
+}
+
+function addRecent(post) {
+  const list = loadRecent().filter((p) => !(p.platform === post.platform && p.id === post.id));
+  list.unshift({ platform: post.platform, id: post.id, kind: post.kind, url: post.url, who: post.who });
+  saveRecent(list.slice(0, RECENT_MAX));
+  renderRecent();
+}
+
+function recentLabel(post) {
+  const what = post.platform === "tiktok" ? "video" : post.platform === "instagram" ? (post.kind === "reel" ? "reel" : "post") : "post";
+  return post.who ? `${post.who} ${what}` : `${PLATFORMS[post.platform].name} ${what}`;
+}
+
+function renderRecent() {
+  const list = loadRecent().filter((p) => PLATFORMS[p.platform]);
+  const box = document.getElementById("recent");
+  const ul = document.getElementById("recent-list");
+  box.hidden = !list.length;
+  ul.innerHTML = "";
+  for (const post of list) {
+    const li = document.createElement("li");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-${post.platform}"/></svg>`;
+    btn.append(recentLabel(post));
+    btn.addEventListener("click", () => {
+      watchForm.elements.url.value = post.url;
+      watchMsg.textContent = "";
+      playPost(post);
+    });
+    li.appendChild(btn);
+    ul.appendChild(li);
+  }
+}
+
+document.getElementById("recent-clear").addEventListener("click", () => {
+  saveRecent([]);
+  renderRecent();
+});
+
+function tryPlay() {
+  const post = parsePostLink(watchForm.elements.url.value);
+  if (post.error) {
+    watchMsg.textContent = post.error;
+    return;
+  }
+  watchMsg.textContent = "";
+  playPost(post);
+}
+
+watchForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  tryPlay();
+});
+
+// Play straight away when a link is pasted.
+watchForm.elements.url.addEventListener("paste", () => setTimeout(tryPlay));
+
+document.getElementById("open-watch").addEventListener("click", () => {
+  renderRecent();
+  watchDialog.showModal();
+  watchForm.elements.url.focus();
+});
+
+watchDialog.querySelector("[data-close]").addEventListener("click", () => watchDialog.close());
+
+// Stop any playing video when the window closes.
+watchDialog.addEventListener("close", () => {
+  player.innerHTML = "";
+  watchMsg.textContent = "";
+});
+
 // ---------- Day / night ----------
 
 const MODE_KEY = "social-hub-mode";

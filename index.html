@@ -226,6 +226,10 @@
         <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1z"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </button>
+      <button class="btn ghost" id="open-watch" type="button" title="Watch a TikTok, Instagram or X link here">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>
+        <span>Watch</span>
+      </button>
       <button class="btn ghost" id="open-all" type="button" title="Open all three accounts in new tabs">Open all ↗</button>
       <button class="btn" id="open-settings" type="button">Accounts</button>
     </div>
@@ -292,6 +296,34 @@
         <button class="btn" value="save">Save</button>
       </div>
     </form>
+  </dialog>
+
+  <dialog id="watch" class="watch" aria-labelledby="watch-title">
+    <form id="watch-form" class="watch-form" novalidate>
+      <div class="watch-head">
+        <h2 id="watch-title">Watch here</h2>
+        <button class="btn ghost small" type="button" data-close>Close</button>
+      </div>
+      <p class="hint">Paste a link to a TikTok video, an Instagram post or reel, or an X post.</p>
+      <div class="watch-input">
+        <input name="url" placeholder="https://www.tiktok.com/@name/video/…" autocomplete="off" spellcheck="false" aria-label="Link to watch">
+        <button class="btn" type="submit">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>
+          Play
+        </button>
+      </div>
+      <p class="watch-msg" id="watch-msg" role="status"></p>
+    </form>
+
+    <div class="player" id="player"></div>
+
+    <div class="recent" id="recent" hidden>
+      <div class="recent-head">
+        <span>Recently watched</span>
+        <button class="link-btn" type="button" id="recent-clear">Clear</button>
+      </div>
+      <ul id="recent-list"></ul>
+    </div>
   </dialog>
 
   <!-- Brand icons, referenced with <use href="#icon-..."> -->
