@@ -26,6 +26,7 @@
       <button class="tab" data-mode="tiktok" type="button" title="TikTok (Ctrl+2)"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-tiktok"/></svg><span class="tab-label">TikTok</span><span class="count" hidden></span></button>
       <button class="tab" data-mode="instagram" type="button" title="Instagram (Ctrl+3)"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-instagram"/></svg><span class="tab-label">Instagram</span><span class="count" hidden></span></button>
       <button class="tab" data-mode="x" type="button" title="X (Ctrl+4)"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-x"/></svg><span class="tab-label">X</span><span class="count" hidden></span></button>
+      <button class="tab" data-mode="youtube" type="button" title="YouTube (Ctrl+5)"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-youtube"/></svg><span class="tab-label">YouTube</span><span class="count" hidden></span></button>
     </nav>
 
     <div class="actions">
@@ -38,7 +39,7 @@
         <span class="offline-label">Sound off</span>
       </button>
       <button class="icon-btn accounts-btn" id="accounts" type="button" title="Accounts (Ctrl+Shift+A)">
-        <span class="dots" aria-hidden="true"><i data-key="tiktok"></i><i data-key="instagram"></i><i data-key="x"></i></span>
+        <span class="dots" aria-hidden="true"><i data-key="tiktok"></i><i data-key="instagram"></i><i data-key="x"></i><i data-key="youtube"></i></span>
         <span class="sr">Accounts</span>
       </button>
       <button class="icon-btn" id="help" type="button" title="Keyboard shortcuts (Ctrl+/)">
@@ -70,6 +71,12 @@
         <span class="count" hidden></span>
         <button class="connect-chip" type="button" data-action="connect" hidden>Connect</button>
         <span class="pane-tools">
+          <span class="video-nav" hidden>
+            <button type="button" data-action="prev-video" title="Previous video (Alt+↑)"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <button type="button" data-action="next-video" title="Next video (Alt+↓)"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </span>
+          <button type="button" data-action="video-fullscreen" class="only-youtube" title="Play video full screen"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" data-action="saved" title="Saved"><svg viewBox="0 0 24 24"><path d="M6.5 3.5h11v17L12 16l-5.5 4.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
           <button type="button" data-action="back" title="Back (Alt+←)"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <button type="button" data-action="forward" title="Forward (Alt+→)"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <button type="button" data-action="reload" title="Reload (Ctrl+R)"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -186,9 +193,10 @@
         <svg viewBox="0 0 24 24"><path d="M12 2.5l8 3v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10v-6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.5 12l2.4 2.4 4.6-4.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </span>
       <h1 id="google-title">Use another way to sign in</h1>
-      <p class="sheet-lead">Google doesn't allow "Continue with Google" inside desktop apps. It shows a "may not be secure" message in every app except its own browser. Your account is safe, and nothing was sent anywhere.</p>
+      <p class="sheet-lead" id="google-youtube" hidden>Google didn't allow signing in to YouTube inside this app. Your account is safe. You can still watch any YouTube video here without signing in. For your subscriptions and Watch later, use YouTube in your browser.</p>
+      <p class="sheet-lead" id="google-lead">Google doesn't allow "Continue with Google" inside desktop apps. It shows a "may not be secure" message in every app except its own browser. Your account is safe, and nothing was sent anywhere.</p>
 
-      <ol class="steps">
+      <ol class="steps" id="google-steps">
         <li><strong>Sign in with your email, phone or username</strong> and your <span data-site-name></span> password.</li>
         <li><strong>No password yet?</strong> On the login page, tap <em>Forgot password</em> and enter your Gmail address. <span data-site-name></span> emails you a link to make one. Your Google sign-in keeps working on your phone.</li>
       </ol>
@@ -251,6 +259,9 @@
       <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" fill="none" stroke="currentColor" stroke-width="2"/>
       <circle cx="12" cy="12" r="4.3" fill="none" stroke="currentColor" stroke-width="2"/>
       <circle cx="17.6" cy="6.4" r="1.3" fill="currentColor"/>
+    </symbol>
+    <symbol id="icon-youtube" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6z"/>
     </symbol>
     <symbol id="icon-x" viewBox="0 0 24 24">
       <path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>

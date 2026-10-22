@@ -96,6 +96,8 @@ function render(state) {
     $(".connect-chip", el).hidden = p.connected;
     $('[data-action="back"]', el).disabled = !p.canGoBack;
     $('[data-action="forward"]', el).disabled = !p.canGoForward;
+    $(".video-nav", el).hidden = !p.videoFeed;
+    $('[data-action="saved"]', el).title = `Your ${p.savedLabel.toLowerCase()}`;
     $('[data-action="mute"]', el).title = p.muted ? "Turn sound on (Ctrl+M)" : "Turn sound off (Ctrl+M)";
     renderProblem(el, p);
 
@@ -136,6 +138,12 @@ function render(state) {
   showOverlay("settings", state.overlay === "settings");
   const googleName = state.panes.find((p) => p.key === state.googleSite)?.name || "the site";
   for (const el of document.querySelectorAll("#google-panel [data-site-name]")) el.textContent = googleName;
+  const yt = state.googleSite === "youtube";
+  $("#google-youtube").hidden = !yt;
+  $("#google-lead").hidden = yt;
+  $("#google-steps").hidden = yt;
+  $("#google-title").textContent = yt ? "Watch without signing in" : "Use another way to sign in";
+  $("#google-login").textContent = yt ? "Keep watching here" : `Go to ${googleName} login`;
   showOverlay("google", state.overlay === "google");
   renderSettings(state);
 
@@ -295,7 +303,8 @@ function renderKeys(platform) {
   const mod = platform === "darwin" ? "⌘" : "Ctrl";
   const rows = [
     [[mod, "1"], "All 3 side by side"],
-    [[mod, "2 / 3 / 4"], "TikTok, Instagram or X"],
+    [[mod, "2 – 5"], "TikTok, Instagram, X or YouTube"],
+    [["Alt", "↓ / ↑"], "Next / previous video"],
     [["Alt", "←"], "Back"],
     [["Alt", "→"], "Forward"],
     [["Alt", "Home"], "Home feed"],

@@ -47,6 +47,15 @@ follow. You log in once in each and it stays logged in.
   The **⋯** button has zoom, copy link, open in your browser and sign out.
   Right-click works like in a browser. Only TikTok has sound at first so three
   videos don't play over each other.
+- **YouTube** has its own tab (Ctrl+5) for regular videos. The full-screen
+  button in its header (or **⋯ → Play video full screen** on any site) fills
+  the whole screen; Esc goes back. YouTube works without signing in; if
+  Google won't allow signing in inside the app, it says so and you keep
+  watching. Add it to the All view in Settings if you like.
+- **Saved** (bookmark button on each site): Instagram saved posts and reels,
+  TikTok Favorites, X Bookmarks, YouTube Library.
+- **Reels and TikTok:** the ⌃/⌄ buttons in the header (or Alt+↓ / Alt+↑) always
+  move to the next / previous video. On Instagram reels the arrow keys work too.
 - If a site can't load (no internet, site down), its column says why and
   tries again by itself. It reconnects right away when your internet comes
   back.
