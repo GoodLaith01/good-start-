@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld("hub", {
   setHidden: (key, hide) => ipcRenderer.send("set-hidden", key, hide),
   setWidths: (widths) => ipcRenderer.send("set-widths", widths),
   resetWidths: () => ipcRenderer.send("reset-widths"),
+  googleHelp: (action) => ipcRenderer.send("google-help", action),
   onState: (fn) => ipcRenderer.on("state", (_e, state) => fn(state)),
   onToast: (fn) => ipcRenderer.on("toast", (_e, text) => fn(text)),
   ready: () => ipcRenderer.send("ready"),

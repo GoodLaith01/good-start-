@@ -179,6 +179,31 @@
     </div>
   </div>
 
+  <!-- Shown instead of Google's "This browser or app may not be secure" page. -->
+  <div class="overlay" id="google-panel" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="google-title">
+      <span class="sheet-badge" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 2.5l8 3v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10v-6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.5 12l2.4 2.4 4.6-4.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <h1 id="google-title">Use another way to sign in</h1>
+      <p class="sheet-lead">Google doesn't allow "Continue with Google" inside desktop apps. It shows a "may not be secure" message in every app except its own browser. Your account is safe, and nothing was sent anywhere.</p>
+
+      <ol class="steps">
+        <li><strong>Sign in with your email, phone or username</strong> and your <span data-site-name></span> password.</li>
+        <li><strong>No password yet?</strong> On the login page, tap <em>Forgot password</em> and enter your Gmail address. <span data-site-name></span> emails you a link to make one. Your Google sign-in keeps working on your phone.</li>
+      </ol>
+
+      <div class="sheet-actions">
+        <button type="button" class="primary big" id="google-login">Go to <span data-site-name></span> login</button>
+      </div>
+      <p class="sheet-foot">
+        <button type="button" class="link" id="google-browser">Use <span data-site-name></span> in my browser instead</button>
+        ·
+        <button type="button" class="link" id="google-cancel">Not now</button>
+      </p>
+    </div>
+  </div>
+
   <template id="column-template">
     <li class="column">
       <span class="logo-wrap"><svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><use/></svg></span>

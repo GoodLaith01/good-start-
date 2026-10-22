@@ -58,8 +58,11 @@ follow. You log in once in each and it stays logged in.
 - **Keyboard:** Ctrl+1–4 switch views, Ctrl+Tab next view, Alt+←/→ back and
   forward, Ctrl+R reload, Ctrl+M sound, Ctrl+Shift+M mute everything,
   Ctrl+Shift+L day/night, Ctrl+, settings. Ctrl+/ shows them all.
-- Log in with your username/email and password. "Continue with Google"
-  usually doesn't work inside apps like this.
+- Log in with your username/email/phone and password. Google blocks
+  "Continue with Google" inside desktop apps (it says "This browser or app may
+  not be secure"), so the app stops before that page and shows other ways to
+  sign in. No password yet? Use **Forgot password** with your Gmail address on
+  the site's login page to make one.
 
 The app's code is in `desktop/`. GitHub builds the installer automatically
 (`.github/workflows/desktop.yml`) whenever `desktop/` changes. To run it from

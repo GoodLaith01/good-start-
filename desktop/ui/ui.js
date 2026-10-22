@@ -134,6 +134,9 @@ function render(state) {
   showOverlay("accounts", state.overlay === "accounts");
   showOverlay("shortcuts", state.overlay === "shortcuts");
   showOverlay("settings", state.overlay === "settings");
+  const googleName = state.panes.find((p) => p.key === state.googleSite)?.name || "the site";
+  for (const el of document.querySelectorAll("#google-panel [data-site-name]")) el.textContent = googleName;
+  showOverlay("google", state.overlay === "google");
   renderSettings(state);
 
   if (first) renderKeys(state.platform);
@@ -408,6 +411,9 @@ $("#settings").addEventListener("click", () => window.hub.overlay("settings"));
 $("#settings-done").addEventListener("click", () => window.hub.overlay(null));
 $("#muted-all").addEventListener("click", () => window.hub.muteAll(false));
 $("#reset-widths").addEventListener("click", () => window.hub.resetWidths());
+$("#google-login").addEventListener("click", () => window.hub.googleHelp("login"));
+$("#google-browser").addEventListener("click", () => window.hub.googleHelp("browser"));
+$("#google-cancel").addEventListener("click", () => window.hub.overlay(null));
 for (const input of document.querySelectorAll("[data-setting]")) {
   input.addEventListener("change", () => window.hub.setSetting(input.dataset.setting, input.checked));
 }

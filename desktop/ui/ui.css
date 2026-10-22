@@ -611,3 +611,23 @@ body.resizing, body.resizing * { cursor: col-resize !important; }
 .link { padding: 0; border: 0; background: none; color: var(--accent-solid); font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
 
 .switches { display: grid; gap: 8px; margin-bottom: 22px; }
+
+/* ---------- Google sign-in help ---------- */
+
+.sheet-badge {
+  display: inline-grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 10px;
+  border-radius: 18px;
+  background: rgba(142, 240, 168, .14);
+  border: 1px solid rgba(142, 240, 168, .35);
+  color: var(--ok);
+}
+.sheet-badge svg { width: 28px; height: 28px; }
+.steps { margin: 0 0 22px; padding: 0 0 0 22px; text-align: left; color: var(--muted); line-height: 1.55; }
+.steps li { margin-bottom: 10px; padding-left: 4px; }
+.steps strong { color: var(--text); }
+.sheet-foot { margin: 14px 0 0; color: var(--faint); font-size: 13px; }
+.sheet-foot .link { color: var(--muted); font-weight: 600; }

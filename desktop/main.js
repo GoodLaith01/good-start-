@@ -51,8 +51,20 @@ const THEME_COLORS = {
 // Sign-in pages a site may open in a pop-up (e.g. "Log in with Apple").
 const LOGIN_HOSTS = [
   "tiktok.com", "instagram.com", "x.com", "twitter.com",
-  "facebook.com", "accounts.google.com", "appleid.apple.com", "login.live.com",
+  "facebook.com", "appleid.apple.com", "login.live.com",
 ];
+
+// Google refuses sign-in inside any app that isn't a full browser and shows
+// "This browser or app may not be secure". Instead of letting you hit that
+// wall, the app stops at Google's page and shows other ways to sign in.
+function isGoogleSignIn(url) {
+  try {
+    const { hostname, pathname } = new URL(url);
+    return hostname === "accounts.google.com" && !pathname.startsWith("/gsi/");
+  } catch {
+    return false;
+  }
+}
 
 // After a page fails to load, try again after these many seconds.
 const RETRY_DELAYS = [3, 8, 20, 45, 60];
@@ -166,7 +178,8 @@ for (const key of KEYS) {
 let win;
 const views = {};
 let fullscreenKey = null; // a site playing a video full screen
-let overlay = null; // "accounts" or "shortcuts" while a panel covers the window
+let overlay = null; // "accounts", "shortcuts", "settings" or "google" while a panel covers the window
+let googleKey = null; // the site whose "Continue with Google" was stopped
 let activeKey = null; // the site you last clicked or typed in
 let laidOut = ""; // window size the sites were last placed for
 let online = true;
@@ -306,6 +319,10 @@ function createSiteView(key) {
   // of the other sites opens in that site's column; anything else goes to your
   // normal browser.
   wc.setWindowOpenHandler(({ url }) => {
+    if (isGoogleSignIn(url)) {
+      showGoogleHelp(key);
+      return { action: "deny" };
+    }
     const target = siteForUrl(url);
     if (target && target !== key && !hostMatches(url, SITES[key].hosts)) {
       openIn(target, url);
@@ -537,6 +554,7 @@ function sendState() {
     allCount: allKeys().length,
     settings: { background: state.background, startup: state.startup, restore: state.restore },
     overlay,
+    googleSite: googleKey,
     online,
     active: state.mode === "all" ? activeKey : null,
     fullscreen: !!fullscreenKey,
@@ -596,6 +614,18 @@ function setMode(mode) {
 function setOverlay(name) {
   overlay = name;
   layout();
+}
+
+function showGoogleHelp(key) {
+  googleKey = key;
+  if (state.mode !== "all" && state.mode !== key) state.mode = key;
+  setOverlay("google");
+  if (win && !win.isVisible()) showWindow();
+}
+
+// Which site a web page belongs to, by its saved login (its session).
+function siteForSession(ses) {
+  return KEYS.find((key) => session.fromPartition(`persist:${key}`) === ses);
 }
 
 // Ctrl+Tab: All, then each site in column order.
@@ -888,6 +918,18 @@ ipcMain.on("overlay", (_e, name) => {
   if (name === null || ["accounts", "shortcuts", "settings"].includes(name)) setOverlay(name);
 });
 
+// From the Google help panel: go to the site's own login page, or open it in
+// the computer's normal browser.
+ipcMain.on("google-help", (_e, action) => {
+  const key = googleKey;
+  if (!key) return;
+  if (action === "login") paneAction(key, "connect");
+  if (action === "browser") {
+    shell.openExternal(SITES[key].login);
+    setOverlay(null);
+  }
+});
+
 ipcMain.on("welcomed", () => {
   state.welcomed = true;
   saveSettings();
@@ -971,6 +1013,18 @@ if (!app.requestSingleInstanceLock()) {
   // Nothing inside the app may embed other pages or open unknown windows.
   app.on("web-contents-created", (_e, contents) => {
     contents.on("will-attach-webview", (e) => e.preventDefault());
+    // A site or sign-in pop-up heading to Google's sign-in page: stop there
+    // and explain, instead of showing Google's "may not be secure" block.
+    const stopGoogle = (e, url, isInPlace, isMainFrame) => {
+      if (isMainFrame === false || !isGoogleSignIn(url)) return;
+      e.preventDefault();
+      const key = siteForSession(contents.session);
+      if (!key) return;
+      if (contents.getType() === "window") contents.close();
+      showGoogleHelp(key);
+    };
+    contents.on("will-navigate", (e, url) => stopGoogle(e, url));
+    contents.on("will-redirect", stopGoogle);
   });
 
   app.whenReady().then(() => {
