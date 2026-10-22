@@ -812,10 +812,26 @@ dialog.watch {
   .panel { height: 80vh; }
 }
 
+/* The desktop app is for Windows computers; hide its button on small screens. */
+@media (max-width: 1100px) {
+  #get-app span { display: none; }
+}
+@media (max-width: 900px) {
+  #get-app { display: none; }
+}
+
 @media (max-width: 520px) {
   #open-watch span, #side-by-side span { display: none; }
 }
 
 @media (max-width: 420px) {
   .tab span { display: none; }
+}
+
+/* Opened from the iPhone Home Screen: the page runs under the status bar and
+   home indicator, so keep the top bar and content clear of them. */
+@media (display-mode: standalone) {
+  .topbar { padding-top: max(10px, env(safe-area-inset-top)); }
+  .board { padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+  .toast { bottom: calc(16px + env(safe-area-inset-bottom)); }
 }

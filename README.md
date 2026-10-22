@@ -14,6 +14,57 @@
   inside the site: paste its link and it plays right away. Recently watched
   links are kept for quick replay (in that browser only).
 
+## On iPhone
+
+Open the website in Safari, tap **Share**, then **Add to Home Screen**. Social
+Hub gets its own icon and opens full screen like an app (the site shows a tip
+about this the first time). It shows the same public previews as the
+website; tap **Open** on a panel to jump into the real TikTok, Instagram or X
+app.
+
+## Desktop app (Windows)
+
+The website can only show public previews, because TikTok, Instagram and X
+don't allow logging in inside another web page. The **Social Hub app** can:
+it shows the real TikTok, Instagram and X side by side in one window, each
+logged in to your own account, so you get your feeds and the people you
+follow. You log in once in each and it stays logged in.
+
+- **Download:** the **Get the app** button on the website, or
+  [Social-Hub-Setup.exe](https://github.com/GoodLaith01/good-start-/releases/latest/download/Social-Hub-Setup.exe).
+  Windows may say "Windows protected your PC" because the app isn't signed:
+  click **More info → Run anyway**.
+- **First start:** a welcome screen connects your accounts. **Connect** opens
+  that site's own login page, and the app shows **Connected** as soon as
+  you're in. The three dots at the top right show which accounts are connected
+  and open the same screen later, where you can also **sign out** of one site.
+  The app never sees or stores your password.
+- **All 3 / TikTok / Instagram / X** at the top switch between all three and
+  one at a time. New messages and alerts show as a red count on each tab and
+  on the taskbar icon. Desktop notifications from the sites can be turned on
+  or off in the accounts screen.
+- Each site has **back, forward, reload, home** and **sound on/off** buttons.
+  The **⋯** button has zoom, copy link, open in your browser and sign out.
+  Right-click works like in a browser. Only TikTok has sound at first so three
+  videos don't play over each other.
+- If a site can't load (no internet, site down), its column says why and
+  tries again by itself. It reconnects right away when your internet comes
+  back.
+- **Settings** (the sliders button): choose which sites show in the All view
+  and in what order, keep the app running in the tray when you close the
+  window (alerts keep coming, sound turns off), open it when you sign in to
+  your computer, and reopen each site where you left off. Drag the space
+  between two columns to make one wider; double-click it to even them out.
+- **Keyboard:** Ctrl+1–4 switch views, Ctrl+Tab next view, Alt+←/→ back and
+  forward, Ctrl+R reload, Ctrl+M sound, Ctrl+Shift+M mute everything,
+  Ctrl+Shift+L day/night, Ctrl+, settings. Ctrl+/ shows them all.
+- Log in with your username/email and password. "Continue with Google"
+  usually doesn't work inside apps like this.
+
+The app's code is in `desktop/`. GitHub builds the installer automatically
+(`.github/workflows/desktop.yml`) whenever `desktop/` changes. To run it from
+the code: `cd desktop && npm install && npm start`.
+
 ## Use it
 
 Open `index.html` in a browser, click **Accounts**, and enter your usernames

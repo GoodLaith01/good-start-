@@ -1,0 +1,54 @@
+# Builds the Social Hub desktop app for Windows and publishes it as a
+# download on the repository's Releases page.
+name: Build desktop app
+
+on:
+  push:
+    paths:
+      - "desktop/**"
+      - ".github/workflows/desktop.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+
+      - run: npm ci
+
+      - name: Build installer and portable app
+        run: npx electron-builder --win nsis portable --publish never
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Social-Hub-Windows
+          path: desktop/dist/*.exe
+
+      - name: Publish download
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: desktop-latest
+          target_commitish: ${{ github.sha }}
+          name: Social Hub for Windows
+          make_latest: true
+          body: |
+            TikTok, Instagram and X side by side in one window, logged in to your own accounts.
+
+            - **Social-Hub-Setup.exe**: installs the app and adds it to the Start menu.
+            - **Social-Hub-Portable.exe**: runs without installing.
+
+            Windows may show "Windows protected your PC" because the app isn't signed: click **More info → Run anyway**.
+          files: desktop/dist/*.exe
