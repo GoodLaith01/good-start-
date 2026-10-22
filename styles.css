@@ -827,3 +827,11 @@ dialog.watch {
 @media (max-width: 420px) {
   .tab span { display: none; }
 }
+
+/* Opened from the iPhone Home Screen: the page runs under the status bar and
+   home indicator, so keep the top bar and content clear of them. */
+@media (display-mode: standalone) {
+  .topbar { padding-top: max(10px, env(safe-area-inset-top)); }
+  .board { padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+  .toast { bottom: calc(16px + env(safe-area-inset-bottom)); }
+}

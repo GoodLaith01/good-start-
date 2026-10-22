@@ -14,6 +14,14 @@
   inside the site: paste its link and it plays right away. Recently watched
   links are kept for quick replay (in that browser only).
 
+## On iPhone
+
+Open the website in Safari, tap **Share**, then **Add to Home Screen**. Social
+Hub gets its own icon and opens full screen like an app (the site shows a tip
+about this the first time). It shows the same public previews as the
+website; tap **Open** on a panel to jump into the real TikTok, Instagram or X
+app.
+
 ## Desktop app (Windows)
 
 The website can only show public previews, because TikTok, Instagram and X

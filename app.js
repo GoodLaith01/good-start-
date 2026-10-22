@@ -210,6 +210,27 @@ toast.querySelector("[data-dismiss]").addEventListener("click", () => {
   toast.hidden = true;
 });
 
+// On an iPhone or iPad in Safari, explain once how to add Social Hub to the
+// Home Screen, where it opens full screen like an app.
+(function suggestHomeScreen() {
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const installed = navigator.standalone || matchMedia("(display-mode: standalone)").matches;
+  if (!ios || installed) return;
+  try {
+    if (localStorage.getItem("social-hub-home-tip")) return;
+    localStorage.setItem("social-hub-home-tip", "1");
+  } catch (e) {}
+  const share = '<svg viewBox="0 0 24 24" aria-hidden="true" style="vertical-align:-3px"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M6 11H5v10h14V11h-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const tip = () => showToast(`<p><strong>Put Social Hub on your Home Screen</strong></p><p>Tap ${share} <strong>Share</strong> below, then <strong>Add to Home Screen</strong>. It opens full screen with its own icon, like an app.</p>`);
+  // Wait until the accounts window (shown on a first visit) is closed.
+  setTimeout(() => {
+    const open = document.querySelector("dialog[open]");
+    if (open) open.addEventListener("close", () => setTimeout(tip, 600), { once: true });
+    else tip();
+  }, 1500);
+})();
+
 function feedLinks() {
   return Object.entries(FEEDS)
     .map(([key, url]) => `<a href="${url}" target="_blank" rel="noopener">${PLATFORMS[key].name} ↗</a>`)
@@ -426,6 +447,8 @@ const modeToggle = document.getElementById("mode-toggle");
 
 function setMode(mode) {
   document.documentElement.dataset.mode = mode;
+  // Match the iPhone status bar and Safari's toolbar to the scene.
+  document.querySelector('meta[name="theme-color"]').content = mode === "night" ? "#050b1c" : "#0f3b2a";
   const next = mode === "night" ? "day" : "night";
   modeToggle.title = `Switch to ${next} mode`;
   modeToggle.setAttribute("aria-label", modeToggle.title);
