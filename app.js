@@ -184,15 +184,67 @@ document.addEventListener("click", (e) => {
   if (e.target.closest("[data-action='settings']")) openSettings();
 });
 
-// Browsers may block all but the first new tab; allow pop-ups for this site
-// if only one opens.
-document.getElementById("open-all").addEventListener("click", () => {
-  const keys = Object.keys(PLATFORMS).filter((k) => current[k]);
-  if (!keys.length) return openSettings();
-  for (const key of keys) {
-    window.open(PLATFORMS[key].profileUrl(current[key]), `_blank`, "noopener");
-  }
+// ---------- Side by side: the real apps, logged in ----------
+//
+// The sites won't run logged in inside this page, so instead open each one's
+// feed in its own window and tile the three across the screen. You sign in
+// in those windows like normal, and the browser remembers it next time.
+
+const FEEDS = {
+  tiktok: "https://www.tiktok.com/foryou",
+  instagram: "https://www.instagram.com/reels/",
+  x: "https://x.com/home",
+};
+
+const toast = document.getElementById("toast");
+
+function showToast(html) {
+  toast.querySelector(".toast-body").innerHTML = html;
+  toast.hidden = false;
+}
+
+toast.querySelector("[data-dismiss]").addEventListener("click", () => {
+  toast.hidden = true;
 });
+
+function feedLinks() {
+  return Object.entries(FEEDS)
+    .map(([key, url]) => `<a href="${url}" target="_blank" rel="noopener">${PLATFORMS[key].name} ↗</a>`)
+    .join(" · ");
+}
+
+function openSideBySide() {
+  // Phones and tablets can't place three windows side by side.
+  if (matchMedia("(pointer: coarse)").matches && window.innerWidth < 1024) {
+    showToast(`<p>Phones can't show three apps at once. Use Side by side on a computer, or open them one at a time:</p><p>${feedLinks()}</p>`);
+    return;
+  }
+
+  const keys = Object.keys(FEEDS);
+  const width = Math.floor(screen.availWidth / keys.length);
+  const height = screen.availHeight;
+  const left = screen.availLeft || 0;
+  const top = screen.availTop || 0;
+
+  let blocked = 0;
+  keys.forEach((key, i) => {
+    // A fixed name per site reuses its window instead of opening a new one each click.
+    const win = window.open(
+      FEEDS[key],
+      `social-hub-${key}`,
+      `popup,width=${width},height=${height},left=${left + i * width},top=${top}`,
+    );
+    if (!win) blocked++;
+  });
+
+  if (blocked) {
+    showToast(`<p>Your browser blocked ${blocked} of the 3 windows. Click the blocked pop-up icon at the right of the address bar, choose <b>Always allow pop-ups</b> for this site, then press Side by side again.</p><p>Or open them yourself: ${feedLinks()}</p>`);
+  } else {
+    showToast(`<p>Opened TikTok, Instagram and X side by side. Log in once in each window and your browser will remember it.</p>`);
+  }
+}
+
+document.getElementById("side-by-side").addEventListener("click", openSideBySide);
 
 // ---------- Watch a single video or post ----------
 

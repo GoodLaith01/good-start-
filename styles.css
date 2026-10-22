@@ -760,6 +760,32 @@ dialog.watch {
 .link-btn { padding: 0; border: 0; background: none; color: var(--muted); font: inherit; text-decoration: underline; cursor: pointer; }
 .link-btn:hover { color: var(--text); }
 
+/* ---------- Toast message ---------- */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 20;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  width: min(560px, calc(100vw - 32px));
+  padding: 14px 18px;
+  transform: translateX(-50%);
+  border: 1px solid var(--glass-line);
+  border-radius: 16px;
+  background: var(--glass-strong);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 20px 50px rgba(var(--shade), .5);
+  font-size: 14px;
+}
+.toast-body { flex: 1; }
+.toast-body p { margin: 0 0 6px; }
+.toast-body p:last-child { margin: 0; }
+.toast-body a { color: var(--text); font-weight: 700; }
+
 /* ---------- Small screens ---------- */
 
 @media (max-width: 900px) {
@@ -782,10 +808,9 @@ dialog.watch {
 }
 
 @media (max-width: 520px) {
-  #open-watch span { display: none; }
+  #open-watch span, #side-by-side span { display: none; }
 }
 
 @media (max-width: 420px) {
   .tab span { display: none; }
-  #open-all { display: none; }
 }
