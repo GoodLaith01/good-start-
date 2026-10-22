@@ -607,7 +607,10 @@ svg { width: 18px; height: 18px; fill: currentColor; flex: none; }
 .panel[data-platform="instagram"] .logo { color: var(--instagram); }
 .panel[data-platform="x"] .logo { color: var(--x); }
 
-.who { display: flex; flex-direction: column; min-width: 0; margin-right: auto; }
+/* Logo and name link to the real site. */
+.who-link { display: flex; align-items: center; gap: 12px; min-width: 0; margin-right: auto; color: inherit; text-decoration: none; }
+.who-link:hover strong { text-decoration: underline; }
+.who { display: flex; flex-direction: column; min-width: 0; }
 .who strong { font-weight: 800; }
 .handle { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -652,6 +655,8 @@ svg { width: 18px; height: 18px; fill: currentColor; flex: none; }
   text-align: center;
   color: var(--muted);
 }
+
+.empty-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 
 .empty svg {
   width: 52px;

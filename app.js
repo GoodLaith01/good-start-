@@ -18,6 +18,7 @@ const VIEWS = ["all", "tiktok", "instagram", "x"];
 const PLATFORMS = {
   tiktok: {
     name: "TikTok",
+    feedUrl: "https://www.tiktok.com/foryou",
     profileUrl: (u) => `https://www.tiktok.com/@${u}`,
     render(body, u) {
       body.innerHTML = `
@@ -34,6 +35,7 @@ const PLATFORMS = {
 
   instagram: {
     name: "Instagram",
+    feedUrl: "https://www.instagram.com/reels/",
     profileUrl: (u) => `https://www.instagram.com/${u}/`,
     render(body, u) {
       body.innerHTML = `
@@ -46,6 +48,7 @@ const PLATFORMS = {
 
   x: {
     name: "X",
+    feedUrl: "https://x.com/home",
     profileUrl: (u) => `https://x.com/${u}`,
     render(body, u) {
       body.innerHTML = `
@@ -112,24 +115,28 @@ function renderPanel(key, username) {
   const panel = document.querySelector(`.panel[data-platform="${key}"]`);
   const platform = PLATFORMS[key];
   const body = panel.querySelector("[data-body]");
-  const open = panel.querySelector("[data-open]");
 
   panel.querySelector("[data-handle]").textContent = username ? `@${username}` : "Not set";
 
+  // The logo, the name and the Open button always go to the real site:
+  // your profile once a username is set, otherwise the site's main feed.
+  for (const link of panel.querySelectorAll("[data-open]")) {
+    link.href = username ? platform.profileUrl(username) : platform.feedUrl;
+  }
+
   if (!username) {
-    open.removeAttribute("href");
-    open.hidden = true;
     body.innerHTML = `
       <div class="empty">
         <svg viewBox="0 0 24 24"><use href="#icon-${key}"/></svg>
         <div>Add your ${platform.name} username to see your account here.</div>
-        <button class="btn" type="button" data-action="settings">Add ${platform.name}</button>
+        <div class="empty-actions">
+          <button class="btn" type="button" data-action="settings">Add ${platform.name}</button>
+          <a class="btn ghost" href="${platform.feedUrl}" target="_blank" rel="noopener">Open ${platform.name} ↗</a>
+        </div>
       </div>`;
     return;
   }
 
-  open.href = platform.profileUrl(username);
-  open.hidden = false;
   platform.render(body, username);
 }
 
@@ -190,11 +197,7 @@ document.addEventListener("click", (e) => {
 // feed in its own window and tile the three across the screen. You sign in
 // in those windows like normal, and the browser remembers it next time.
 
-const FEEDS = {
-  tiktok: "https://www.tiktok.com/foryou",
-  instagram: "https://www.instagram.com/reels/",
-  x: "https://x.com/home",
-};
+const FEEDS = Object.fromEntries(Object.entries(PLATFORMS).map(([key, p]) => [key, p.feedUrl]));
 
 const toast = document.getElementById("toast");
 
