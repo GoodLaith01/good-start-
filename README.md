@@ -26,11 +26,24 @@ follow. You log in once in each and it stays logged in.
   [Social-Hub-Setup.exe](https://github.com/GoodLaith01/good-start-/releases/latest/download/Social-Hub-Setup.exe).
   Windows may say "Windows protected your PC" because the app isn't signed:
   click **More info → Run anyway**.
+- **First start:** a welcome screen connects your accounts. **Connect** opens
+  that site's own login page, and the app shows **Connected** as soon as
+  you're in. The three dots at the top right show which accounts are connected
+  and open the same screen later, where you can also **sign out** of one site.
+  The app never sees or stores your password.
 - **All 3 / TikTok / Instagram / X** at the top switch between all three and
-  one at a time.
-- Each site has **back, reload, home, smaller/bigger** and **sound on/off**
-  buttons. Only TikTok has sound at first so three videos don't play over each
-  other.
+  one at a time. New messages and alerts show as a red count on each tab and
+  on the taskbar icon. Desktop notifications from the sites can be turned on
+  or off in the accounts screen.
+- Each site has **back, forward, reload, home** and **sound on/off** buttons.
+  The **⋯** button has zoom, copy link, open in your browser and sign out.
+  Right-click works like in a browser. Only TikTok has sound at first so three
+  videos don't play over each other.
+- If a site can't load (no internet, site down), its column says why and
+  tries again by itself. It reconnects right away when your internet comes
+  back.
+- **Keyboard:** Ctrl+1–4 switch views, Alt+←/→ back and forward, Ctrl+R
+  reload, Ctrl+M sound, Ctrl+Shift+L day/night. Ctrl+/ shows them all.
 - Log in with your username/email and password. "Continue with Google"
   usually doesn't work inside apps like this.
 

@@ -1,4 +1,5 @@
 # GitHub Pages: the website is the files at the top of the repository.
-# The desktop app lives in desktop/ and isn't part of the site.
+# The desktop app lives in desktop/ (screenshots in docs/) and isn't part of the site.
 exclude:
   - desktop
+  - docs

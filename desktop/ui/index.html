@@ -11,50 +11,154 @@
   <div class="backdrop" aria-hidden="true"></div>
 
   <header class="toolbar">
-    <div class="brand"><span class="brand-dot"></span>Social Hub</div>
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><use href="#icon-hub"/></svg>
+      <span class="brand-name">Social Hub</span>
+      <span class="toast" id="toast" role="status" aria-live="polite"></span>
+    </div>
 
     <nav class="tabs" aria-label="Choose a view">
-      <button class="tab" data-mode="all" type="button">
+      <button class="tab" data-mode="all" type="button" title="All 3 side by side (Ctrl+1)">
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="9.5" y="4" width="5" height="16" rx="1.5"/><rect x="16" y="4" width="5" height="16" rx="1.5"/></svg>
-        All 3
+        <span class="tab-label">All 3</span>
+        <span class="count" hidden></span>
       </button>
-      <button class="tab" data-mode="tiktok" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-tiktok"/></svg>TikTok</button>
-      <button class="tab" data-mode="instagram" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-instagram"/></svg>Instagram</button>
-      <button class="tab" data-mode="x" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-x"/></svg>X</button>
+      <button class="tab" data-mode="tiktok" type="button" title="TikTok (Ctrl+2)"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-tiktok"/></svg><span class="tab-label">TikTok</span><span class="count" hidden></span></button>
+      <button class="tab" data-mode="instagram" type="button" title="Instagram (Ctrl+3)"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-instagram"/></svg><span class="tab-label">Instagram</span><span class="count" hidden></span></button>
+      <button class="tab" data-mode="x" type="button" title="X (Ctrl+4)"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-x"/></svg><span class="tab-label">X</span><span class="count" hidden></span></button>
     </nav>
 
-    <button class="icon-btn" id="theme" type="button" title="Switch day / night">
-      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1z"/></svg>
-      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    </button>
+    <div class="actions">
+      <span class="offline-chip" id="offline" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 8.5a15 15 0 0 1 20 0M5.5 12a10 10 0 0 1 13 0M9 15.5a5 5 0 0 1 6 0M3 3l18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span class="offline-label">Offline</span>
+      </span>
+      <button class="icon-btn accounts-btn" id="accounts" type="button" title="Accounts (Ctrl+Shift+A)">
+        <span class="dots" aria-hidden="true"><i data-key="tiktok"></i><i data-key="instagram"></i><i data-key="x"></i></span>
+        <span class="sr">Accounts</span>
+      </button>
+      <button class="icon-btn" id="help" type="button" title="Keyboard shortcuts (Ctrl+/)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6 10h1.5M9.5 10H11M13 10h1.5M16.5 10H18M8 14h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span class="sr">Keyboard shortcuts</span>
+      </button>
+      <button class="icon-btn" id="theme" type="button" title="Switch day / night (Ctrl+Shift+L)">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span class="sr">Switch day / night</span>
+      </button>
+    </div>
   </header>
 
-  <!-- One header strip per site; the site itself is drawn by the app just below it. -->
+  <!-- One header and frame per site; the site itself is drawn by the app inside the frame. -->
   <main id="panes"></main>
 
   <template id="pane-template">
     <section class="pane">
       <div class="pane-head">
-        <svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><use/></svg>
+        <span class="logo-wrap"><svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><use/></svg></span>
         <strong class="pane-name"></strong>
-        <span class="spinner" aria-label="Loading"></span>
+        <span class="count" hidden></span>
+        <button class="connect-chip" type="button" data-action="connect" hidden>Connect</button>
         <span class="pane-tools">
-          <button type="button" data-action="back" title="Back"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-          <button type="button" data-action="reload" title="Reload"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-          <button type="button" data-action="home" title="Home feed"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
-          <button type="button" data-action="zoom-out" title="Smaller"><svg viewBox="0 0 24 24"><path d="M6 12h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
-          <button type="button" data-action="zoom-in" title="Bigger"><svg viewBox="0 0 24 24"><path d="M6 12h12M12 6v12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
-          <button type="button" data-action="mute" class="mute" title="Sound on / off">
+          <button type="button" data-action="back" title="Back (Alt+←)"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" data-action="forward" title="Forward (Alt+→)"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" data-action="reload" title="Reload (Ctrl+R)"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" data-action="home" title="Home feed (Alt+Home)"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
+          <button type="button" data-action="mute" class="mute" title="Sound on / off (Ctrl+M)">
             <svg class="sound-on" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
             <svg class="sound-off" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </button>
+          <button type="button" data-action="menu" title="More"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
         </span>
+        <span class="progress" aria-hidden="true"></span>
       </div>
-      <div class="pane-body"><span class="pane-loading"></span></div>
+
+      <div class="pane-body">
+        <!-- Shown while the site draws its first page. -->
+        <div class="skeleton" aria-label="Loading">
+          <div class="sk-post"><i class="sk-avatar"></i><i class="sk-line w60"></i><i class="sk-line w35"></i><i class="sk-media"></i></div>
+          <div class="sk-post"><i class="sk-avatar"></i><i class="sk-line w45"></i><i class="sk-line w70"></i><i class="sk-media short"></i></div>
+        </div>
+        <!-- Shown when the site can't be reached or stopped working. -->
+        <div class="problem" role="alert" hidden>
+          <span class="problem-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use/></svg></span>
+          <h2 class="problem-title"></h2>
+          <p class="problem-text"></p>
+          <div class="problem-actions">
+            <button type="button" class="primary" data-action="retry">Try again</button>
+            <button type="button" class="ghost" data-action="open-external">Open in browser</button>
+          </div>
+          <p class="problem-note"></p>
+        </div>
+      </div>
     </section>
   </template>
 
+  <!-- Accounts: the welcome screen on first run, and later via the toolbar. -->
+  <div class="overlay" id="accounts-panel" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="accounts-title">
+      <svg class="sheet-mark" viewBox="0 0 32 32" aria-hidden="true"><use href="#icon-hub"/></svg>
+      <h1 id="accounts-title">Welcome to Social Hub</h1>
+      <p class="sheet-lead" id="accounts-lead">TikTok, Instagram and X together in one window. Connect your accounts to see the people you follow.</p>
+
+      <ul class="account-list" id="account-list"></ul>
+
+      <label class="switch-row">
+        <span>
+          <strong>Desktop notifications</strong>
+          <small>Let the sites tell you about new messages and mentions.</small>
+        </span>
+        <input type="checkbox" id="notifications" role="switch">
+        <span class="switch" aria-hidden="true"></span>
+      </label>
+
+      <p class="privacy">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        You sign in on each site's own login page. Social Hub never sees or stores your password, and your logins stay on this computer.
+      </p>
+
+      <div class="sheet-actions">
+        <button type="button" class="primary big" id="accounts-done">Open my feeds</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="shortcuts-panel" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
+      <h1 id="shortcuts-title">Keyboard shortcuts</h1>
+      <p class="sheet-lead">They work everywhere in the app, even while you're scrolling a feed.</p>
+      <dl class="keys" id="keys"></dl>
+      <div class="sheet-actions">
+        <button type="button" class="primary" id="shortcuts-done">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <template id="account-template">
+    <li class="account">
+      <span class="logo-wrap big"><svg class="logo" viewBox="0 0 24 24" aria-hidden="true"><use/></svg></span>
+      <span class="account-text">
+        <strong class="account-name"></strong>
+        <small class="account-status"></small>
+      </span>
+      <button type="button" class="account-btn"></button>
+    </li>
+  </template>
+
   <svg class="sprite" width="0" height="0" aria-hidden="true">
+    <defs>
+      <linearGradient id="hub-grad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#25f4ee"/>
+        <stop offset=".5" stop-color="#ff7aa8"/>
+        <stop offset="1" stop-color="#ffc46b"/>
+      </linearGradient>
+    </defs>
+    <symbol id="icon-hub" viewBox="0 0 32 32">
+      <rect x="1" y="1" width="30" height="30" rx="9" fill="url(#hub-grad)"/>
+      <rect x="7" y="8" width="5" height="16" rx="2" fill="#fff"/>
+      <rect x="13.5" y="8" width="5" height="16" rx="2" fill="#fff" opacity=".85"/>
+      <rect x="20" y="8" width="5" height="16" rx="2" fill="#fff" opacity=".7"/>
+    </symbol>
     <symbol id="icon-tiktok" viewBox="0 0 24 24">
       <path fill="currentColor" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
     </symbol>
@@ -66,6 +170,10 @@
     <symbol id="icon-x" viewBox="0 0 24 24">
       <path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
     </symbol>
+    <symbol id="icon-offline" viewBox="0 0 24 24"><path d="M2 8.5a15 15 0 0 1 20 0M5.5 12a10 10 0 0 1 13 0M9 15.5a5 5 0 0 1 6 0M3 3l18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="19" r="1.4" fill="currentColor"/></symbol>
+    <symbol id="icon-unreachable" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c2.6 2.6 3.8 5.6 3.8 9s-1.2 6.4-3.8 9c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3z" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="icon-crashed" viewBox="0 0 24 24"><path d="M12 3l9.5 17h-19z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10v4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="17.3" r="1.1" fill="currentColor"/></symbol>
+    <symbol id="icon-frozen" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3.5 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
   </svg>
 
   <script src="ui.js"></script>
