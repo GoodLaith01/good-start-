@@ -9,11 +9,24 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap">
   <link rel="stylesheet" href="styles.css">
+  <script>
+    // Pick day or night before the page draws, so it doesn't flash the wrong scene.
+    // A saved choice wins; otherwise night runs from 6pm to 6am.
+    (function () {
+      var mode;
+      try { mode = localStorage.getItem("social-hub-mode"); } catch (e) {}
+      if (mode !== "day" && mode !== "night") {
+        var h = new Date().getHours();
+        mode = h >= 6 && h < 18 ? "day" : "night";
+      }
+      document.documentElement.dataset.mode = mode;
+    })();
+  </script>
 </head>
 <body>
   <!-- Calm jungle scene: sunbeams through the canopy, swaying leaves and
        vines, drifting fireflies and a couple of butterflies. Decorative only. -->
-  <div class="scene" aria-hidden="true">
+  <div class="scene day" aria-hidden="true">
     <div class="sky"></div>
 
     <div class="rays">
@@ -129,6 +142,60 @@
     </svg>
   </div>
 
+  <!-- Night mode: starry sky, moon and a calm sea with moonlight on the water. -->
+  <div class="scene night" aria-hidden="true">
+    <div class="night-sky"></div>
+    <div class="milky"></div>
+    <div class="stars s1"></div>
+    <div class="stars s2"></div>
+    <div class="stars s3"></div>
+    <div class="shooting"></div>
+
+    <div class="moon">
+      <svg viewBox="0 0 100 100">
+        <filter id="moon-texture">
+          <feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="4" seed="8"/>
+          <feColorMatrix type="saturate" values="0"/>
+        </filter>
+        <rect width="100" height="100" filter="url(#moon-texture)"/>
+      </svg>
+    </div>
+
+    <svg class="island" viewBox="0 0 600 36" preserveAspectRatio="none">
+      <path d="M0,36 L0,22 C40,18 70,10 110,12 C150,14 170,4 210,6 C250,8 270,18 320,22 C380,26 430,30 600,34 L600,36 Z"/>
+    </svg>
+    <div class="horizon"></div>
+
+    <div class="sea">
+      <div class="waves">
+        <svg viewBox="0 0 1000 1000" preserveAspectRatio="none">
+          <filter id="water" x="0" y="0" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.005 0.08" numOctaves="3" seed="4"/>
+            <feColorMatrix type="matrix" values="0 0 0 0 0.62  0 0 0 0 0.72  0 0 0 0 0.95  0 0 0 2.2 -1.05"/>
+          </filter>
+          <rect width="1000" height="1000" filter="url(#water)"/>
+        </svg>
+      </div>
+
+      <div class="moonpath">
+        <svg class="glint-a" viewBox="0 0 400 300" preserveAspectRatio="none">
+          <filter id="glint-a" x="0" y="0" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.015 0.22" numOctaves="2" seed="11"/>
+            <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 0.97  0 0 0 0 0.86  0 0 0 6 -3.2"/>
+          </filter>
+          <rect width="400" height="300" filter="url(#glint-a)"/>
+        </svg>
+        <svg class="glint-b" viewBox="0 0 400 300" preserveAspectRatio="none">
+          <filter id="glint-b" x="0" y="0" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.015 0.22" numOctaves="2" seed="29"/>
+            <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 0.97  0 0 0 0 0.86  0 0 0 6 -3.2"/>
+          </filter>
+          <rect width="400" height="300" filter="url(#glint-b)"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
   <header class="topbar">
     <div class="brand">
       <span class="brand-dot"></span>
@@ -155,6 +222,10 @@
     </nav>
 
     <div class="actions">
+      <button class="btn ghost mode-toggle" id="mode-toggle" type="button">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5a8.5 8.5 0 1 0 11.1 11.1z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
       <button class="btn ghost" id="open-all" type="button" title="Open all three accounts in new tabs">Open all ↗</button>
       <button class="btn" id="open-settings" type="button">Accounts</button>
     </div>

@@ -15,6 +15,11 @@
   --text: #f6fff4;
   --muted: #c7e6cf;
   --accent: linear-gradient(135deg, #ffd166, #a8e063);
+  --accent-text: #1d3a12;
+  --accent-glow: 255, 209, 102;
+  --bar: rgba(10, 42, 30, .35);
+  --shade: 5, 30, 18;
+  --tab-on-text: #14402a;
 
   --tiktok: #25f4ee;
   --tiktok-2: #fe2c55;
@@ -30,6 +35,23 @@
   color-scheme: dark;
 }
 
+/* Night mode: moonlit sea. Same variables, cool blue palette. */
+:root[data-mode="night"] {
+  --canopy: #050b1c;
+  --glass: rgba(8, 16, 38, .45);
+  --glass-strong: rgba(8, 16, 38, .78);
+  --glass-line: rgba(200, 215, 255, .16);
+  --text: #f1f4ff;
+  --muted: #b9c3e6;
+  --accent: linear-gradient(135deg, #f4f1e6, #aebfff);
+  --accent-text: #16204a;
+  --accent-glow: 190, 205, 255;
+  --bar: rgba(6, 12, 30, .4);
+  --shade: 2, 6, 20;
+  --tab-on-text: #16204a;
+  --peach: #aebfff;
+}
+
 * { box-sizing: border-box; }
 
 [hidden] { display: none !important; }
@@ -40,6 +62,7 @@ body {
   margin: 0;
   background: var(--canopy);
   color: var(--text);
+  transition: background-color 1.2s;
   font: 15px/1.45 "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
@@ -206,6 +229,197 @@ svg { width: 18px; height: 18px; fill: currentColor; flex: none; }
   100% { transform: translate(-60px, 45vh) rotate(6deg); }
 }
 
+/* ---------- Day / night switching ---------- */
+
+/* Only one scene shows at a time; they crossfade, and the hidden one stops moving. */
+.scene { transition: opacity 1.2s ease, visibility 0s linear 1.2s; }
+:root[data-mode="night"] .scene.day,
+:root:not([data-mode="night"]) .scene.night { opacity: 0; visibility: hidden; }
+:root[data-mode="night"] .scene.day *,
+:root:not([data-mode="night"]) .scene.night * { animation-play-state: paused; }
+:root[data-mode="night"] .scene.night,
+:root:not([data-mode="night"]) .scene.day { transition: opacity 1.2s ease, visibility 0s; }
+
+/* ---------- Night scene: stars, moon and a calm sea ---------- */
+
+.night-sky {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(40% 30% at 72% 22%, rgba(150, 170, 230, .22), transparent 70%),
+    radial-gradient(120% 40% at 50% 62%, rgba(70, 95, 160, .45), transparent 60%),
+    linear-gradient(180deg, #02040d 0%, #060d24 30%, #0f1d44 52%, #22356a 62%, #0a1530 62.2%, #050b1c 100%);
+}
+
+/* Faint Milky Way band across the sky. */
+.milky {
+  position: absolute;
+  left: -10%;
+  top: -10vh;
+  width: 120%;
+  height: 50vh;
+  background:
+    radial-gradient(30% 40% at 25% 60%, rgba(190, 200, 255, .10), transparent 70%),
+    radial-gradient(25% 35% at 55% 45%, rgba(220, 210, 255, .08), transparent 70%),
+    radial-gradient(30% 40% at 85% 30%, rgba(190, 210, 255, .07), transparent 70%);
+  transform: rotate(-14deg);
+  filter: blur(6px);
+}
+
+/* Stars are drawn as box-shadows by app.js, in three sizes that twinkle at different speeds. */
+.stars {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  border-radius: 50%;
+  background: transparent;
+  animation: star-twinkle 7s ease-in-out infinite;
+}
+.stars.s2 { width: 1.6px; height: 1.6px; animation-duration: 5s; animation-delay: -2s; }
+.stars.s3 { width: 2.4px; height: 2.4px; animation-duration: 9s; animation-delay: -4s; }
+
+@keyframes star-twinkle {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: .55; }
+}
+
+/* A shooting star now and then. */
+.shooting {
+  position: absolute;
+  left: 18%;
+  top: 8vh;
+  width: 160px;
+  height: 1.5px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, .9), transparent);
+  border-radius: 2px;
+  transform: rotate(20deg);
+  opacity: 0;
+  animation: shoot 19s ease-in infinite;
+  animation-delay: 6s;
+}
+
+@keyframes shoot {
+  0%, 94%   { opacity: 0; transform: rotate(20deg) translateX(0); }
+  95%       { opacity: 1; }
+  100%      { opacity: 0; transform: rotate(20deg) translateX(-320px); }
+}
+
+.moon {
+  position: absolute;
+  left: 72%;
+  top: 14vh;
+  width: clamp(70px, 9vw, 130px);
+  aspect-ratio: 1;
+  margin-left: calc(clamp(70px, 9vw, 130px) / -2);
+  border-radius: 50%;
+  /* Soft dark "seas" placed roughly like the real near side of the moon, plus Tycho's bright rays. */
+  background:
+    radial-gradient(circle at 47% 85%, rgba(255, 255, 255, .55) 0 2%, transparent 5%),
+    radial-gradient(ellipse 30% 26% at 35% 30%, rgba(110, 108, 100, .38), transparent),
+    radial-gradient(ellipse 15% 13% at 58% 29%, rgba(110, 108, 100, .34), transparent),
+    radial-gradient(ellipse 19% 17% at 64% 46%, rgba(110, 108, 100, .32), transparent),
+    radial-gradient(ellipse 22% 34% at 24% 56%, rgba(110, 108, 100, .3), transparent),
+    radial-gradient(ellipse 14% 11% at 46% 70%, rgba(110, 108, 100, .24), transparent),
+    radial-gradient(ellipse 8% 8% at 79% 36%, rgba(110, 108, 100, .34), transparent),
+    radial-gradient(circle at 42% 38%, #fffef6 0%, #ece7d6 55%, #c9c2ab 100%);
+  box-shadow:
+    0 0 30px 6px rgba(255, 250, 225, .45),
+    0 0 110px 40px rgba(180, 200, 255, .18),
+    0 0 260px 120px rgba(120, 150, 230, .10),
+    inset -12px -10px 26px rgba(40, 40, 60, .22);
+  overflow: hidden;
+  animation: moon-glow 10s ease-in-out infinite;
+}
+
+/* Fine surface texture so the moon doesn't look flat. */
+.moon svg { width: 100%; height: 100%; mix-blend-mode: multiply; opacity: .45; }
+
+@keyframes moon-glow {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.06); }
+}
+
+/* Thin haze where the sky meets the sea. */
+.horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(62vh - 14px);
+  height: 28px;
+  background: linear-gradient(180deg, transparent, rgba(160, 180, 235, .22), transparent);
+  filter: blur(3px);
+}
+
+.island {
+  position: absolute;
+  left: 0;
+  top: calc(62vh - 34px);
+  width: 46vw;
+  height: 36px;
+  fill: #060c20;
+}
+
+.sea {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 62vh;
+  bottom: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(18% 60% at 72% 0%, rgba(170, 190, 245, .18), transparent 70%),
+    linear-gradient(180deg, #13244c 0%, #0a1634 30%, #050b1e 100%);
+}
+
+/* Rippled water, tilted back so the waves shrink toward the horizon. */
+.waves {
+  position: absolute;
+  left: -20%;
+  top: 0;
+  width: 140%;
+  height: 260%;
+  transform-origin: top center;
+  transform: perspective(380px) rotateX(62deg);
+  opacity: .5;
+}
+.waves svg { width: 100%; height: 100%; animation: water-drift 40s ease-in-out infinite alternate; will-change: transform; }
+
+@keyframes water-drift {
+  from { transform: translateX(-3%); }
+  to   { transform: translateX(3%); }
+}
+
+/* The moon's sparkling path on the water. */
+.moonpath {
+  position: absolute;
+  left: 72%;
+  top: 0;
+  width: 46vw;
+  height: 100%;
+  margin-left: -23vw;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cfilter id='b'%3E%3CfeGaussianBlur stdDeviation='4'/%3E%3C/filter%3E%3Cpolygon points='46,0 54,0 88,100 12,100' filter='url(%23b)'/%3E%3C/svg%3E");
+  -webkit-mask-size: 100% 100%;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cfilter id='b'%3E%3CfeGaussianBlur stdDeviation='4'/%3E%3C/filter%3E%3Cpolygon points='46,0 54,0 88,100 12,100' filter='url(%23b)'/%3E%3C/svg%3E");
+  mask-size: 100% 100%;
+  opacity: .9;
+}
+.moonpath svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  will-change: opacity, transform;
+}
+.moonpath .glint-a { animation: glint 4s ease-in-out infinite alternate; }
+.moonpath .glint-b { animation: glint 4s ease-in-out infinite alternate-reverse; }
+
+@keyframes glint {
+  from { opacity: .25; transform: translateX(-6px); }
+  to   { opacity: 1;   transform: translateX(6px); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .scene *, .panel { animation: none !important; transition: none !important; }
   .butterfly { display: none; }
@@ -222,7 +436,7 @@ svg { width: 18px; height: 18px; fill: currentColor; flex: none; }
   align-items: center;
   gap: 16px;
   padding: 0 20px;
-  background: rgba(10, 42, 30, .35);
+  background: var(--bar);
   backdrop-filter: blur(16px) saturate(140%);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
   border-bottom: 1px solid var(--glass-line);
@@ -242,7 +456,7 @@ svg { width: 18px; height: 18px; fill: currentColor; flex: none; }
   height: 16px;
   border-radius: 50%;
   background: conic-gradient(var(--tiktok), var(--instagram), var(--peach), var(--mint), var(--tiktok));
-  box-shadow: 0 0 14px rgba(255, 209, 102, .8);
+  box-shadow: 0 0 14px rgba(var(--accent-glow), .8);
   animation: spin 12s linear infinite;
 }
 
@@ -274,8 +488,8 @@ svg { width: 18px; height: 18px; fill: currentColor; flex: none; }
 
 .tab[aria-selected="true"] {
   background: rgba(255, 255, 255, .92);
-  color: #14402a;
-  box-shadow: 0 6px 18px rgba(5, 30, 18, .3);
+  color: var(--tab-on-text);
+  box-shadow: 0 6px 18px rgba(var(--shade), .3);
 }
 
 .tab[data-view="tiktok"][aria-selected="true"] svg { color: #111; }
@@ -291,17 +505,17 @@ svg { width: 18px; height: 18px; fill: currentColor; flex: none; }
   border: 1px solid transparent;
   border-radius: 999px;
   background: var(--accent);
-  color: #1d3a12;
+  color: var(--accent-text);
   font: inherit;
   font-weight: 800;
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: 0 6px 16px rgba(255, 209, 102, .3);
+  box-shadow: 0 6px 16px rgba(var(--accent-glow), .3);
   transition: transform .2s, box-shadow .2s;
 }
 
-.btn:hover { transform: translateY(-1px) scale(1.03); box-shadow: 0 10px 22px rgba(255, 209, 102, .45); }
+.btn:hover { transform: translateY(-1px) scale(1.03); box-shadow: 0 10px 22px rgba(var(--accent-glow), .45); }
 
 .btn.ghost {
   background: rgba(255, 255, 255, .08);
@@ -311,6 +525,13 @@ svg { width: 18px; height: 18px; fill: currentColor; flex: none; }
 }
 
 .btn.small { padding: 6px 13px; font-size: 13px; }
+
+/* Sun/moon button: shows the moon in day mode (go to night) and the sun at night. */
+.mode-toggle { padding: 9px 11px; }
+.mode-toggle svg { transition: transform .5s; }
+.mode-toggle:hover svg { transform: rotate(-20deg) scale(1.1); }
+:root[data-mode="night"] .icon-moon,
+:root:not([data-mode="night"]) .icon-sun { display: none; }
 
 /* ---------- Board ---------- */
 
@@ -342,7 +563,7 @@ svg { width: 18px; height: 18px; fill: currentColor; flex: none; }
   -webkit-backdrop-filter: blur(10px) saturate(130%);
   border: 1px solid var(--glass-line);
   border-radius: var(--radius);
-  box-shadow: 0 20px 50px rgba(5, 30, 18, .4);
+  box-shadow: 0 20px 50px rgba(var(--shade), .4);
   overflow: hidden;
   animation: pop-in .6s cubic-bezier(.2, .9, .3, 1.2) both;
 }
@@ -455,10 +676,10 @@ dialog {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   color: var(--text);
-  box-shadow: 0 30px 80px rgba(5, 30, 18, .55);
+  box-shadow: 0 30px 80px rgba(var(--shade), .55);
 }
 
-dialog::backdrop { background: rgba(5, 30, 18, .35); backdrop-filter: blur(4px); }
+dialog::backdrop { background: rgba(var(--shade), .35); backdrop-filter: blur(4px); }
 
 dialog h2 { margin: 0 0 4px; font-size: 22px; font-weight: 800; }
 

@@ -194,7 +194,52 @@ document.getElementById("open-all").addEventListener("click", () => {
   }
 });
 
+// ---------- Day / night ----------
+
+const MODE_KEY = "social-hub-mode";
+const modeToggle = document.getElementById("mode-toggle");
+
+function setMode(mode) {
+  document.documentElement.dataset.mode = mode;
+  const next = mode === "night" ? "day" : "night";
+  modeToggle.title = `Switch to ${next} mode`;
+  modeToggle.setAttribute("aria-label", modeToggle.title);
+}
+
+modeToggle.addEventListener("click", () => {
+  const mode = document.documentElement.dataset.mode === "night" ? "day" : "night";
+  setMode(mode);
+  try {
+    localStorage.setItem(MODE_KEY, mode);
+  } catch {}
+});
+
+// Scatter stars across the sky above the sea (top 60% of the screen), more of
+// them higher up, each a box-shadow copy of a tiny dot.
+function drawStars() {
+  const layers = [
+    [".stars.s1", 220, [0.35, 0.8]],
+    [".stars.s2", 70, [0.6, 0.95]],
+    [".stars.s3", 18, [0.85, 1]],
+  ];
+  const tints = ["255, 255, 255", "220, 230, 255", "255, 244, 220"];
+  for (const [selector, count, [minA, maxA]] of layers) {
+    const shadows = [];
+    for (let i = 0; i < count; i++) {
+      const x = (Math.random() * 100).toFixed(2);
+      const y = (Math.pow(Math.random(), 1.4) * 60).toFixed(2);
+      const a = (minA + Math.random() * (maxA - minA)).toFixed(2);
+      const tint = tints[Math.floor(Math.random() * tints.length)];
+      shadows.push(`${x}vw ${y}vh 0 0 rgba(${tint}, ${a})`);
+    }
+    document.querySelector(selector).style.boxShadow = shadows.join(", ");
+  }
+}
+
 // ---------- Start ----------
+
+setMode(document.documentElement.dataset.mode === "night" ? "night" : "day");
+drawStars();
 
 applyView();
 renderAll(loadAccounts());

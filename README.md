@@ -19,10 +19,18 @@ To put it online for free, enable GitHub Pages for this repository
 
 ## Background
 
-A calm, slowly moving jungle: sunbeams through the canopy, swaying vines and
-leaves, blinking fireflies and two butterflies. It's drawn in code (no image
-files), and the motion switches off for people who turn on "reduce motion"
-on their device.
+There are two moving backgrounds, and the sun/moon button in the top bar
+switches between them:
+
+- **Day:** a calm jungle with sunbeams, swaying vines and leaves, fireflies
+  and butterflies.
+- **Night:** a starry sky with a full moon, a distant island and a calm sea
+  with moonlight shimmering on the water.
+
+The site starts in day mode from 6am to 6pm and in night mode otherwise, and
+remembers your choice once you press the button. Both are drawn in code (no
+image files), and the motion switches off for people who turn on "reduce
+motion" on their device.
 
 To use a picture instead (for example one made in Canva), save it as
 `assets/background.jpg` and in `styles.css` set
