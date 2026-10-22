@@ -47,6 +47,15 @@ follow. You log in once in each and it stays logged in.
   The **⋯** button has zoom, copy link, open in your browser and sign out.
   Right-click works like in a browser. Only TikTok has sound at first so three
   videos don't play over each other.
+- **YouTube** has its own tab (Ctrl+5) for regular videos. The full-screen
+  button in its header (or **⋯ → Play video full screen** on any site) fills
+  the whole screen; Esc goes back. YouTube works without signing in; if
+  Google won't allow signing in inside the app, it says so and you keep
+  watching. Add it to the All view in Settings if you like.
+- **Saved** (bookmark button on each site): Instagram saved posts and reels,
+  TikTok Favorites, X Bookmarks, YouTube Library.
+- **Reels and TikTok:** the ⌃/⌄ buttons in the header (or Alt+↓ / Alt+↑) always
+  move to the next / previous video. On Instagram reels the arrow keys work too.
 - If a site can't load (no internet, site down), its column says why and
   tries again by itself. It reconnects right away when your internet comes
   back.
@@ -58,8 +67,11 @@ follow. You log in once in each and it stays logged in.
 - **Keyboard:** Ctrl+1–4 switch views, Ctrl+Tab next view, Alt+←/→ back and
   forward, Ctrl+R reload, Ctrl+M sound, Ctrl+Shift+M mute everything,
   Ctrl+Shift+L day/night, Ctrl+, settings. Ctrl+/ shows them all.
-- Log in with your username/email and password. "Continue with Google"
-  usually doesn't work inside apps like this.
+- Log in with your username/email/phone and password. Google blocks
+  "Continue with Google" inside desktop apps (it says "This browser or app may
+  not be secure"), so the app stops before that page and shows other ways to
+  sign in. No password yet? Use **Forgot password** with your Gmail address on
+  the site's login page to make one.
 
 The app's code is in `desktop/`. GitHub builds the installer automatically
 (`.github/workflows/desktop.yml`) whenever `desktop/` changes. To run it from

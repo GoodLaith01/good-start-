@@ -36,6 +36,13 @@ const SITES = {
     hosts: ["x.com", "twitter.com"],
     account: { url: "https://x.com", cookie: "auth_token" },
   },
+  youtube: {
+    name: "YouTube",
+    home: "https://www.youtube.com/",
+    login: "https://accounts.google.com/ServiceLogin?service=youtube&continue=https%3A%2F%2Fwww.youtube.com%2F",
+    hosts: ["youtube.com", "youtu.be"],
+    account: { url: "https://www.youtube.com", cookie: "LOGIN_INFO" },
+  },
 };
 const KEYS = Object.keys(SITES);
 
@@ -51,8 +58,80 @@ const THEME_COLORS = {
 // Sign-in pages a site may open in a pop-up (e.g. "Log in with Apple").
 const LOGIN_HOSTS = [
   "tiktok.com", "instagram.com", "x.com", "twitter.com",
-  "facebook.com", "accounts.google.com", "appleid.apple.com", "login.live.com",
+  "facebook.com", "appleid.apple.com", "login.live.com",
 ];
+
+// Google refuses sign-in inside any app that isn't a full browser and shows
+// "This browser or app may not be secure". Instead of letting you hit that
+// wall, the app stops at Google's page and shows other ways to sign in.
+function isGoogleSignIn(url) {
+  try {
+    const { hostname, pathname } = new URL(url);
+    return hostname === "accounts.google.com" && !pathname.startsWith("/gsi/");
+  } catch {
+    return false;
+  }
+}
+
+// YouTube's own sign-in is a Google sign-in, so YouTube is allowed to try it.
+// If Google turns it down, its page address says "rejected".
+function isGoogleRejection(url) {
+  return isGoogleSignIn(url) && /\/rejected/.test(url);
+}
+const FIREFOX_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:131.0) Gecko/20100101 Firefox/131.0";
+
+// Where each site keeps the posts and videos you saved.
+const SAVED = {
+  tiktok: { label: "Favorites", url: "https://www.tiktok.com/profile" },
+  instagram: { label: "Saved", url: null }, // needs your username, found when asked
+  x: { label: "Bookmarks", url: "https://x.com/i/bookmarks" },
+  youtube: { label: "Library", url: "https://www.youtube.com/feed/you" },
+};
+
+// Pages that are a feed of full-height videos, where the up/down buttons show.
+function isVideoFeed(key, url) {
+  try {
+    const { pathname } = new URL(url);
+    if (key === "tiktok") return pathname === "/" || /^\/(foryou|following|explore|friends)/.test(pathname) || /\/video\//.test(pathname);
+    if (key === "instagram") return /^\/reels?\//.test(pathname);
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+// Runs in the site's page: moves the feed to the next (dir 1) or previous
+// (dir -1) video. Scrolling by hand sometimes stops between videos in a
+// narrow column; this always lands on the next one.
+const STEP_VIDEO = (dir) => `(() => {
+  const vh = innerHeight;
+  const centre = (v) => { const r = v.getBoundingClientRect(); return r.top + r.height / 2; };
+  const vids = [...document.querySelectorAll("video")]
+    .filter((v) => { const r = v.getBoundingClientRect(); return r.height > 80 && r.width > 80; })
+    .sort((a, b) => centre(a) - centre(b));
+  if (!vids.length) { window.scrollBy({ top: ${dir} * vh * 0.9, behavior: "smooth" }); return; }
+  const cur = vids.reduce((best, v) => Math.abs(centre(v) - vh / 2) < Math.abs(centre(best) - vh / 2) ? v : best);
+  const next = vids[vids.indexOf(cur) + ${dir}];
+  if (next) { next.scrollIntoView({ block: "center", behavior: "smooth" }); return; }
+  let el = cur.parentElement;
+  while (el && el !== document.documentElement) {
+    const s = getComputedStyle(el);
+    if (/(auto|scroll)/.test(s.overflowY) && el.scrollHeight > el.clientHeight + 4) break;
+    el = el.parentElement;
+  }
+  const box = el && el !== document.documentElement ? el : document.scrollingElement;
+  box.scrollBy({ top: ${dir} * cur.getBoundingClientRect().height, behavior: "smooth" });
+})()`;
+
+// Runs in the site's page: plays the main video full screen.
+const VIDEO_FULLSCREEN = `(() => {
+  const vids = [...document.querySelectorAll("video")].filter((v) => v.getBoundingClientRect().height > 80);
+  if (!vids.length) return false;
+  const area = (v) => v.clientWidth * v.clientHeight;
+  const video = vids.find((v) => !v.paused) || vids.sort((a, b) => area(b) - area(a))[0];
+  (video.closest("#movie_player, .html5-video-player") || video).requestFullscreen();
+  return true;
+})()`;
 
 // After a page fails to load, try again after these many seconds.
 const RETRY_DELAYS = [3, 8, 20, 45, 60];
@@ -77,14 +156,15 @@ const settingsFile = () => path.join(app.getPath("userData"), "settings.json");
 const state = {
   mode: "all", // "all" or one site key
   theme: "day",
-  muted: { tiktok: false, instagram: true, x: true },
-  zoom: { tiktok: 1, instagram: 1, x: 1 },
+  muted: { tiktok: false, instagram: true, x: true, youtube: false },
+  zoom: { tiktok: 1, instagram: 1, x: 1, youtube: 1 },
   notifications: true,
   welcomed: false,
   muteAll: false,
   order: [...KEYS], // column order in the All view
-  hidden: { tiktok: false, instagram: false, x: false }, // left out of the All view
-  widths: { tiktok: 1, instagram: 1, x: 1 }, // relative column widths
+  // Left out of the All view. YouTube has its own tab for watching videos big.
+  hidden: { tiktok: false, instagram: false, x: false, youtube: true },
+  widths: { tiktok: 1, instagram: 1, x: 1, youtube: 1 }, // relative column widths
   background: true, // closing the window keeps the app in the tray
   startup: false, // open (in the tray) when you sign in to Windows
   restore: true, // reopen each site where you left off
@@ -105,8 +185,10 @@ function loadSettings() {
     for (const name of ["notifications", "welcomed", "muteAll", "background", "startup", "restore", "trayHinted"]) {
       if (typeof saved[name] === "boolean") state[name] = saved[name];
     }
-    if (Array.isArray(saved.order) && saved.order.length === KEYS.length && KEYS.every((k) => saved.order.includes(k))) {
-      state.order = saved.order;
+    // Keep your saved order; sites added in a newer version go at the end.
+    if (Array.isArray(saved.order)) {
+      const known = saved.order.filter((k, i) => KEYS.includes(k) && saved.order.indexOf(k) === i);
+      state.order = [...known, ...KEYS.filter((k) => !known.includes(k))];
     }
     for (const key of KEYS) {
       if (typeof saved.hidden?.[key] === "boolean") state.hidden[key] = saved.hidden[key];
@@ -166,7 +248,9 @@ for (const key of KEYS) {
 let win;
 const views = {};
 let fullscreenKey = null; // a site playing a video full screen
-let overlay = null; // "accounts" or "shortcuts" while a panel covers the window
+let madeFullScreen = false; // the app went full screen for that video
+let overlay = null; // "accounts", "shortcuts", "settings" or "google" while a panel covers the window
+let googleKey = null; // the site whose "Continue with Google" was stopped
 let activeKey = null; // the site you last clicked or typed in
 let laidOut = ""; // window size the sites were last placed for
 let online = true;
@@ -281,6 +365,15 @@ function createSiteView(key) {
   ses.setPermissionRequestHandler((_wc, permission, done) => done(permits(permission)));
   ses.setPermissionCheckHandler((_wc, permission) => permits(permission));
 
+  // Google is pickier than YouTube about which browsers may sign in, so
+  // YouTube's sign-in pages are asked for as Firefox. If Google still says
+  // no, the app explains and YouTube keeps working without signing in.
+  if (key === "youtube") {
+    ses.webRequest.onBeforeSendHeaders({ urls: ["https://accounts.google.com/*"] }, (details, done) => {
+      done({ requestHeaders: { ...details.requestHeaders, "User-Agent": FIREFOX_UA } });
+    });
+  }
+
   // Watch the site's sign-in cookie so the app knows when you're connected.
   let cookieTimer;
   ses.cookies.on("changed", (_e, cookie) => {
@@ -306,6 +399,10 @@ function createSiteView(key) {
   // of the other sites opens in that site's column; anything else goes to your
   // normal browser.
   wc.setWindowOpenHandler(({ url }) => {
+    if (isGoogleSignIn(url) && key !== "youtube") {
+      showGoogleHelp(key);
+      return { action: "deny" };
+    }
     const target = siteForUrl(url);
     if (target && target !== key && !hostMatches(url, SITES[key].hosts)) {
       openIn(target, url);
@@ -328,12 +425,22 @@ function createSiteView(key) {
     return { action: "deny" };
   });
 
+  // A video played full screen covers the whole screen, not just the window.
   wc.on("enter-html-full-screen", () => {
     fullscreenKey = key;
+    wc.focus();
+    if (!win.isFullScreen()) {
+      madeFullScreen = true;
+      win.setFullScreen(true);
+    }
     layout();
   });
   wc.on("leave-html-full-screen", () => {
     fullscreenKey = null;
+    if (madeFullScreen) {
+      madeFullScreen = false;
+      win.setFullScreen(false);
+    }
     layout();
   });
 
@@ -537,6 +644,7 @@ function sendState() {
     allCount: allKeys().length,
     settings: { background: state.background, startup: state.startup, restore: state.restore },
     overlay,
+    googleSite: googleKey,
     online,
     active: state.mode === "all" ? activeKey : null,
     fullscreen: !!fullscreenKey,
@@ -554,6 +662,8 @@ function sendState() {
         muted: state.muted[key],
         zoom: state.zoom[key],
         share: state.widths[key],
+        videoFeed: isVideoFeed(key, wc.getURL()),
+        savedLabel: SAVED[key].label,
         loading: wc.isLoading(),
         painted: l.painted,
         error: l.error,
@@ -596,6 +706,18 @@ function setMode(mode) {
 function setOverlay(name) {
   overlay = name;
   layout();
+}
+
+function showGoogleHelp(key) {
+  googleKey = key;
+  if (state.mode !== "all" && state.mode !== key) state.mode = key;
+  setOverlay("google");
+  if (win && !win.isVisible()) showWindow();
+}
+
+// Which site a web page belongs to, by its saved login (its session).
+function siteForSession(ses) {
+  return KEYS.find((key) => session.fromPartition(`persist:${key}`) === ses);
 }
 
 // Ctrl+Tab: All, then each site in column order.
@@ -736,6 +858,57 @@ function paneAction(key, action) {
     case "menu":
       showPaneMenu(key);
       break;
+    case "next-video":
+    case "prev-video":
+      wc.executeJavaScript(STEP_VIDEO(action === "next-video" ? 1 : -1)).catch(() => {});
+      break;
+    case "video-fullscreen":
+      // Counts as your click, so the page may go full screen.
+      wc.executeJavaScript(VIDEO_FULLSCREEN, true)
+        .then((ok) => !ok && toast("Start a video first"))
+        .catch(() => toast("Start a video first"));
+      break;
+    case "saved":
+      openSaved(key);
+      break;
+  }
+}
+
+async function openSaved(key) {
+  const { label } = SAVED[key];
+  if (!live[key].connected) {
+    toast(`Connect your ${SITES[key].name} account to see your ${label.toLowerCase()}`);
+    return paneAction(key, "connect");
+  }
+  let url = SAVED[key].url;
+  if (key === "instagram") {
+    // Instagram's saved page is under your username; ask Instagram for it.
+    const wc = views[key].webContents;
+    const name = hostMatches(wc.getURL(), SITES.instagram.hosts)
+      ? await wc.executeJavaScript(`fetch("/api/v1/accounts/current_user/?edit=true", {
+          headers: { "x-ig-app-id": "936619743392459" }, credentials: "include",
+        }).then((r) => r.json()).then((j) => j.user && j.user.username).catch(() => null)`).catch(() => null)
+      : null;
+    if (typeof name === "string" && /^[\w.]+$/.test(name)) url = `https://www.instagram.com/${name}/saved/`;
+    else {
+      toast("Open your profile, then tap Saved");
+      url = SITES.instagram.home;
+    }
+  }
+  openIn(key, url);
+  if (key === "tiktok") {
+    toast("Your saved videos are under Favorites");
+    // Open the Favorites tab on your profile once it has loaded.
+    views.tiktok.webContents.once("did-finish-load", () => {
+      views.tiktok.webContents.executeJavaScript(`(() => {
+        let tries = 0;
+        const t = setInterval(() => {
+          const tab = document.querySelector('[data-e2e="favorites-tab"]');
+          if (tab) tab.click();
+          if (tab || ++tries > 20) clearInterval(t);
+        }, 400);
+      })()`).catch(() => {});
+    });
   }
 }
 
@@ -764,6 +937,9 @@ function showPaneMenu(key) {
   const z = state.zoom[key];
   const connected = live[key].connected;
   Menu.buildFromTemplate([
+    { label: `Your ${SAVED[key].label.toLowerCase()}`, click: () => paneAction(key, "saved") },
+    { label: "Play video full screen", click: () => paneAction(key, "video-fullscreen") },
+    { type: "separator" },
     { label: "Zoom in", accelerator: "CmdOrCtrl+=", enabled: z < 1.5, click: () => paneAction(key, "zoom-in") },
     { label: "Zoom out", accelerator: "CmdOrCtrl+-", enabled: z > 0.5, click: () => paneAction(key, "zoom-out") },
     { label: `Actual size (now ${Math.round(z * 100)}%)`, accelerator: "CmdOrCtrl+0", enabled: z !== 1, click: () => paneAction(key, "zoom-reset") },
@@ -836,6 +1012,11 @@ function handleShortcut(input, sourceKey) {
   const k = input.key;
   const target = sourceKey || currentKey();
 
+  // Esc always leaves a full-screen video, wherever the keyboard is.
+  if (k === "Escape" && fullscreenKey) {
+    views[fullscreenKey].webContents.executeJavaScript("document.fullscreenElement && document.exitFullscreen()").catch(() => {});
+    return true;
+  }
   if (k === "Escape" && overlay) {
     if (overlay === "accounts") {
       state.welcomed = true;
@@ -844,7 +1025,7 @@ function handleShortcut(input, sourceKey) {
     return setOverlay(null), true;
   }
   if (mod && !input.shift && !input.alt) {
-    if (k >= "1" && k <= "4") return setMode(["all", ...KEYS][Number(k) - 1]), true;
+    if (k >= "1" && k <= String(KEYS.length + 1)) return setMode(["all", ...KEYS][Number(k) - 1]), true;
     if (k === "r") return paneAction(target, "reload"), true;
     if (k === "=" || k === "+") return paneAction(target, "zoom-in"), true;
     if (k === "-") return paneAction(target, "zoom-out"), true;
@@ -861,7 +1042,21 @@ function handleShortcut(input, sourceKey) {
     if (k === "A") return setOverlay(overlay === "accounts" ? null : "accounts"), true;
     if (k === "M") return setMuteAll(!state.muteAll), true;
   }
+  // Instagram's reels don't move with the arrow keys; make them (unless
+  // you're typing, e.g. a comment).
+  if (sourceKey === "instagram" && !mod && !input.alt && !input.shift && (k === "ArrowDown" || k === "ArrowUp")
+      && isVideoFeed("instagram", views.instagram.webContents.getURL())) {
+    const step = STEP_VIDEO(k === "ArrowDown" ? 1 : -1);
+    views.instagram.webContents.executeJavaScript(`(() => {
+      const a = document.activeElement;
+      if (a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) return;
+      ${step};
+    })()`).catch(() => {});
+    return false; // the key still reaches the page, e.g. to move the cursor in a comment
+  }
   if (input.alt && !mod && !input.shift) {
+    if (k === "ArrowDown") return paneAction(target, "next-video"), true;
+    if (k === "ArrowUp") return paneAction(target, "prev-video"), true;
     if (k === "ArrowLeft") return paneAction(target, "back"), true;
     if (k === "ArrowRight") return paneAction(target, "forward"), true;
     if (k === "Home") return paneAction(target, "home"), true;
@@ -886,6 +1081,21 @@ ipcMain.on("pane", (_e, key, action) => paneAction(key, action));
 
 ipcMain.on("overlay", (_e, name) => {
   if (name === null || ["accounts", "shortcuts", "settings"].includes(name)) setOverlay(name);
+});
+
+// From the Google help panel: go to the site's own login page, or open it in
+// the computer's normal browser.
+ipcMain.on("google-help", (_e, action) => {
+  const key = googleKey;
+  if (!key) return;
+  if (action === "login") {
+    if (key === "youtube") openIn(key, SITES.youtube.home);
+    else paneAction(key, "connect");
+  }
+  if (action === "browser") {
+    shell.openExternal(key === "youtube" ? SITES.youtube.home : SITES[key].login);
+    setOverlay(null);
+  }
 });
 
 ipcMain.on("welcomed", () => {
@@ -971,6 +1181,24 @@ if (!app.requestSingleInstanceLock()) {
   // Nothing inside the app may embed other pages or open unknown windows.
   app.on("web-contents-created", (_e, contents) => {
     contents.on("will-attach-webview", (e) => e.preventDefault());
+    // A site or sign-in pop-up heading to Google's sign-in page: stop there
+    // and explain, instead of showing Google's "may not be secure" block.
+    const stopGoogle = (e, url, isInPlace, isMainFrame) => {
+      if (isMainFrame === false || !isGoogleSignIn(url)) return;
+      const key = siteForSession(contents.session);
+      if (!key || (key === "youtube" && !isGoogleRejection(url))) return;
+      e.preventDefault();
+      if (contents.getType() === "window") contents.close();
+      else if (key === "youtube") contents.loadURL(SITES.youtube.home);
+      showGoogleHelp(key);
+    };
+    contents.on("will-navigate", (e, url) => stopGoogle(e, url));
+    contents.on("will-redirect", stopGoogle);
+    contents.on("did-navigate", (_e, url) => {
+      if (!isGoogleRejection(url) || siteForSession(contents.session) !== "youtube") return;
+      contents.loadURL(SITES.youtube.home);
+      showGoogleHelp("youtube");
+    });
   });
 
   app.whenReady().then(() => {

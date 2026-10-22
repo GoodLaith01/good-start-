@@ -211,6 +211,7 @@ body:not(.ready) > :not(.backdrop) { opacity: 0; }
 .dots i.on[data-key="tiktok"] { background: #25f4ee; border-color: #25f4ee; }
 .dots i.on[data-key="instagram"] { background: #ff7aa8; border-color: #ff7aa8; }
 .dots i.on[data-key="x"] { background: var(--text); border-color: var(--text); }
+.dots i.on[data-key="youtube"] { background: #ff3d3d; border-color: #ff3d3d; }
 
 .offline-chip {
   display: flex;
@@ -261,6 +262,7 @@ body:not(.ready) > :not(.backdrop) { opacity: 0; }
 .pane[data-key="tiktok"] { --site: #25f4ee; }
 .pane[data-key="instagram"] { --site: #ff7aa8; }
 .pane[data-key="x"] { --site: var(--text); }
+.pane[data-key="youtube"] { --site: #ff3d3d; }
 
 .logo-wrap {
   display: grid;
@@ -275,6 +277,7 @@ body:not(.ready) > :not(.backdrop) { opacity: 0; }
 .logo-wrap .logo { width: 16px; height: 16px; }
 .pane[data-key="tiktok"] .logo-wrap, .account[data-key="tiktok"] .logo-wrap, .column[data-key="tiktok"] .logo-wrap { color: #fff; filter: drop-shadow(1.5px 1px 0 #fe2c55) drop-shadow(-1px -1px 0 #25f4ee); background: #000; }
 .pane[data-key="instagram"] .logo-wrap, .account[data-key="instagram"] .logo-wrap, .column[data-key="instagram"] .logo-wrap { background: linear-gradient(45deg, #f9ce34, #ee2a7b 50%, #6228d7); }
+.pane[data-key="youtube"] .logo-wrap, .account[data-key="youtube"] .logo-wrap, .column[data-key="youtube"] .logo-wrap { background: #ff0033; }
 .logo-wrap.big { width: 40px; height: 40px; border-radius: 12px; }
 .logo-wrap.big .logo { width: 22px; height: 22px; }
 
@@ -296,6 +299,10 @@ body:not(.ready) > :not(.backdrop) { opacity: 0; }
 .connect-chip[hidden] { display: none; }
 
 .pane-tools { display: flex; gap: 1px; margin-left: auto; }
+.video-nav { display: flex; gap: 1px; margin-right: 4px; padding-right: 4px; border-right: 1px solid var(--line); }
+.video-nav[hidden] { display: none; }
+.video-nav button { color: var(--text); }
+.pane:not([data-key="youtube"]) .only-youtube { display: none !important; }
 .pane-tools button {
   display: grid;
   place-items: center;
@@ -522,7 +529,7 @@ body.fullscreen .pane { visibility: hidden; }
 
 /* Narrow columns: keep the most-used buttons. */
 .pane { container-type: inline-size; }
-@container (max-width: 420px) {
+@container (max-width: 480px) {
   .pane-tools [data-action="forward"], .pane-tools [data-action="home"] { display: none; }
 }
 @container (max-width: 340px) {
@@ -611,3 +618,23 @@ body.resizing, body.resizing * { cursor: col-resize !important; }
 .link { padding: 0; border: 0; background: none; color: var(--accent-solid); font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
 
 .switches { display: grid; gap: 8px; margin-bottom: 22px; }
+
+/* ---------- Google sign-in help ---------- */
+
+.sheet-badge {
+  display: inline-grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 10px;
+  border-radius: 18px;
+  background: rgba(142, 240, 168, .14);
+  border: 1px solid rgba(142, 240, 168, .35);
+  color: var(--ok);
+}
+.sheet-badge svg { width: 28px; height: 28px; }
+.steps { margin: 0 0 22px; padding: 0 0 0 22px; text-align: left; color: var(--muted); line-height: 1.55; }
+.steps li { margin-bottom: 10px; padding-left: 4px; }
+.steps strong { color: var(--text); }
+.sheet-foot { margin: 14px 0 0; color: var(--faint); font-size: 13px; }
+.sheet-foot .link { color: var(--muted); font-weight: 600; }
