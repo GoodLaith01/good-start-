@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+  <!-- The same valley after dusk: deep blue sky, stars, moon, dark ridges. -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#070c22"/>
+      <stop offset=".45" stop-color="#16224a"/>
+      <stop offset=".66" stop-color="#3a3f6e"/>
+      <stop offset=".74" stop-color="#7a6178"/>
+      <stop offset="1" stop-color="#1b1a33"/>
+    </linearGradient>
+    <radialGradient id="moon" cx=".78" cy=".2" r=".25">
+      <stop offset="0" stop-color="#dfe6ff" stop-opacity=".5"/>
+      <stop offset="1" stop-color="#dfe6ff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softer"><feGaussianBlur stdDeviation="2.5"/></filter>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#sky)"/>
+  <rect width="1600" height="1000" fill="url(#moon)"/>
+  <circle cx="1248" cy="200" r="30" fill="#f4f6ff"/>
+  <circle cx="1262" cy="190" r="27" fill="#16224a" opacity=".85"/>
+  <g fill="#fff">
+    <circle cx="120" cy="90" r="1.6"/><circle cx="260" cy="190" r="1.1"/><circle cx="380" cy="60" r="1.4"/>
+    <circle cx="520" cy="150" r="1"/><circle cx="640" cy="80" r="1.7"/><circle cx="760" cy="210" r="1.1"/>
+    <circle cx="880" cy="120" r="1.3"/><circle cx="1010" cy="60" r="1"/><circle cx="1100" cy="170" r="1.5"/>
+    <circle cx="1400" cy="90" r="1.2"/><circle cx="1520" cy="230" r="1.6"/><circle cx="60" cy="260" r="1"/>
+    <circle cx="440" cy="300" r="1.2" opacity=".7"/><circle cx="960" cy="320" r="1" opacity=".6"/>
+    <circle cx="1340" cy="330" r="1.1" opacity=".6"/><circle cx="200" cy="380" r=".9" opacity=".5"/>
+    <circle cx="700" cy="350" r=".9" opacity=".5"/><circle cx="1560" cy="40" r="1.3"/>
+  </g>
+  <path filter="url(#softer)" fill="#3b3a5e" opacity=".85" d="M0 600 L120 560 L240 585 L380 520 L520 570 L640 530 L760 575 L900 540 L1040 580 L1180 520 L1320 560 L1460 530 L1600 565 V1000 H0Z"/>
+  <path filter="url(#softer)" fill="#2c2b4a" d="M0 650 L160 600 L300 640 L450 590 L600 650 L760 610 L900 660 L1060 600 L1220 650 L1380 605 L1600 645 V1000 H0Z"/>
+  <path fill="#1f1e38" d="M0 720 L140 670 L280 705 L430 655 L590 715 L730 680 L880 730 L1040 670 L1200 720 L1360 675 L1600 715 V1000 H0Z"/>
+  <path fill="#15142a" d="M0 800 L180 750 L340 790 L520 740 L700 800 L880 770 L1060 820 L1240 760 L1420 805 L1600 770 V1000 H0Z"/>
+  <path fill="#0c0b1c" d="M0 880 L220 845 L460 875 L700 840 L940 885 L1180 850 L1400 880 L1600 850 V1000 H0Z"/>
+  <g fill="#ffd38a" opacity=".85">
+    <circle cx="610" cy="905" r="1.6"/><circle cx="640" cy="912" r="1.2"/><circle cx="1030" cy="930" r="1.5"/><circle cx="1290" cy="900" r="1.3"/>
+  </g>
+</svg>

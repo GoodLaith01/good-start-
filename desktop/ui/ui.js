@@ -73,6 +73,7 @@ function setCount(el, n) {
 
 function render(state) {
   const first = !current;
+  const modeChanged = !first && current.mode !== state.mode;
   current = state;
   const root = document.documentElement;
   root.dataset.theme = state.theme;
@@ -82,10 +83,14 @@ function render(state) {
   document.body.classList.toggle("ready", true);
 
   let total = 0;
+  const shownOrder = state.order.filter((key) => state.panes.find((p) => p.key === key)?.visible);
   for (const p of state.panes) {
     total += p.unread;
     const el = panes[p.key] || (panes[p.key] = makePane(p.key, p.name));
     el.hidden = !p.visible;
+    // Columns rise in one after another, left to right.
+    el.style.setProperty("--i", String(Math.max(0, shownOrder.indexOf(p.key))));
+    if (modeChanged && p.visible) replay(el);
     el.style.left = `${p.x}px`;
     el.style.width = `${p.width}px`;
     el.classList.toggle("active", state.active === p.key);
@@ -124,6 +129,12 @@ function render(state) {
     tab.setAttribute("aria-pressed", String(tab.dataset.mode === state.mode));
   }
   $("#offline").hidden = state.online;
+  moveThumb();
+
+  // The rail lights the button for what's on screen.
+  const lit = { shortcuts: "#help", settings: "#settings" }[state.overlay] || (state.overlay ? null : "#rail-home");
+  for (const btn of document.querySelectorAll(".rail-btn")) btn.classList.toggle("lit", lit !== null && btn.matches(lit));
+  $("#accounts").classList.toggle("lit", state.overlay === "accounts");
 
   // Panels
   const anyConnected = state.panes.some((p) => p.connected);
@@ -148,6 +159,23 @@ function render(state) {
   renderSettings(state);
 
   if (first) renderKeys(state.platform);
+}
+
+// Slides the white thumb under the chosen tab.
+function moveThumb() {
+  const tab = $('.tab[aria-pressed="true"]');
+  const thumb = $(".tab-thumb");
+  if (!tab) return;
+  thumb.style.width = `${tab.offsetWidth}px`;
+  thumb.style.transform = `translateX(${tab.offsetLeft}px)`;
+  thumb.classList.add("placed");
+}
+
+// Plays an element's entrance animation again.
+function replay(el) {
+  el.style.animation = "none";
+  void el.offsetWidth;
+  el.style.animation = "";
 }
 
 // ---------- Settings ----------
@@ -415,6 +443,11 @@ $("#theme").addEventListener("click", () => {
   window.hub.setTheme(current?.theme === "night" ? "day" : "night");
 });
 $("#accounts").addEventListener("click", () => window.hub.overlay("accounts"));
+$("#rail-home").addEventListener("click", () => {
+  if (current?.overlay === "accounts") window.hub.welcomed();
+  else if (current?.overlay) window.hub.overlay(null);
+  window.hub.setMode("all");
+});
 $("#help").addEventListener("click", () => window.hub.overlay("shortcuts"));
 $("#settings").addEventListener("click", () => window.hub.overlay("settings"));
 $("#settings-done").addEventListener("click", () => window.hub.overlay(null));
@@ -447,4 +480,7 @@ window.hub.onToast(showToast);
 window.hub.online(navigator.onLine);
 window.hub.ready();
 // Ask the app to re-place the sites whenever this window changes size.
-window.addEventListener("resize", () => window.hub.ready());
+window.addEventListener("resize", () => {
+  window.hub.ready();
+  moveThumb();
+});
