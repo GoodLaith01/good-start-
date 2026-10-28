@@ -8,10 +8,11 @@
 
 const {
   app, BrowserWindow, WebContentsView, ipcMain, shell, session, Menu, dialog,
-  nativeImage, screen, clipboard, Tray, Notification,
+  nativeImage, screen, clipboard, Tray, Notification, nativeTheme, net,
 } = require("electron");
 const fs = require("fs");
 const path = require("path");
+const { ElectronBlocker } = require("@ghostery/adblocker-electron");
 
 const SITES = {
   tiktok: {
@@ -369,7 +370,10 @@ function createSiteView(key) {
   // Google is pickier than YouTube about which browsers may sign in, so
   // YouTube's sign-in pages are asked for as Firefox. If Google still says
   // no, the app explains and YouTube keeps working without signing in.
+  let ready = Promise.resolve();
   if (key === "youtube") {
+    // Wait briefly for the ad blocker so the first page already has no ads.
+    ready = Promise.race([startAdBlocker(ses), new Promise((done) => setTimeout(done, 4000))]);
     ses.webRequest.onBeforeSendHeaders({ urls: ["https://accounts.google.com/*"] }, (details, done) => {
       done({ requestHeaders: { ...details.requestHeaders, "User-Agent": FIREFOX_UA } });
     });
@@ -504,7 +508,7 @@ function createSiteView(key) {
   wc.on("did-navigate", (_e, url) => remember(url));
   wc.on("did-navigate-in-page", (_e, url, isMainFrame) => isMainFrame && remember(url));
 
-  wc.loadURL((state.restore && state.lastUrl[key]) || site.home);
+  ready.then(() => wc.loadURL((state.restore && state.lastUrl[key]) || site.home));
 }
 
 async function checkAccount(key) {
@@ -682,8 +686,56 @@ function toast(text) {
   win?.webContents.send("toast", text);
 }
 
+// ---------- Ad blocker (YouTube) ----------
+
+// Ghostery's free, open-source blocker with the EasyList and uBlock Origin
+// lists. The lists are kept on this computer and refreshed once a day; if they
+// can't be downloaded, the last saved copy is used, and if there is none
+// YouTube simply works as usual.
+const DAY = 24 * 60 * 60 * 1000;
+
+async function startAdBlocker(ses) {
+  const file = path.join(app.getPath("userData"), "adblock-lists.bin");
+  const saved = () => fs.promises.readFile(file).then((data) => ElectronBlocker.deserialize(data));
+  let blocker;
+  try {
+    if (Date.now() - fs.statSync(file).mtimeMs < DAY) blocker = await saved();
+  } catch {}
+  if (!blocker) {
+    try {
+      blocker = await ElectronBlocker.fromPrebuiltAdsAndTracking((url) => net.fetch(url));
+      fs.promises.writeFile(file, blocker.serialize()).catch(() => {});
+    } catch {
+      blocker = await saved().catch(() => null);
+    }
+  }
+  if (!blocker) return;
+  // Electron 33 only has the older way to add a page script; the blocker uses
+  // it to hide ad boxes on the page.
+  if (!ses.registerPreloadScript) {
+    ses.registerPreloadScript = ({ filePath }) => (ses.setPreloads([...ses.getPreloads(), filePath]), filePath);
+    ses.unregisterPreloadScript = (filePath) => ses.setPreloads(ses.getPreloads().filter((p) => p !== filePath));
+  }
+  blocker.enableBlockingInSession(ses);
+}
+
+// Night turns the sites dark too: they follow the app as if it were the
+// computer's own dark mode. X keeps its own setting, so it's told directly.
+function applySiteTheme() {
+  nativeTheme.themeSource = state.theme === "night" ? "dark" : "light";
+  session.fromPartition("persist:x").cookies.set({
+    url: "https://x.com",
+    domain: ".x.com",
+    name: "night_mode",
+    value: state.theme === "night" ? "2" : "0",
+    secure: true,
+    expirationDate: Date.now() / 1000 + 365 * 24 * 60 * 60,
+  }).catch(() => {});
+}
+
 function setTheme(theme) {
   state.theme = theme;
+  applySiteTheme();
   const colors = THEME_COLORS[theme];
   win.setBackgroundColor(colors.bg);
   if (process.platform !== "darwin") {
@@ -1206,6 +1258,7 @@ if (!app.requestSingleInstanceLock()) {
     // Windows and Linux don't need the default menu; macOS keeps it for copy/paste.
     if (process.platform !== "darwin") Menu.setApplicationMenu(null);
     loadSettings();
+    applySiteTheme();
     createWindow();
     if (state.background) createTray();
     applyStartup();
