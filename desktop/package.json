@@ -11,9 +11,16 @@
     "start": "electron .",
     "dist": "electron-builder --win nsis portable --publish never"
   },
+  "dependencies": {
+    "@ghostery/adblocker-electron": "2.20.1"
+  },
   "devDependencies": {
     "electron": "33.2.1",
     "electron-builder": "25.1.8"
+  },
+  "overrides": {
+    "@ghostery/adblocker": "2.20.1",
+    "@ghostery/adblocker-electron-preload": "2.20.1"
   },
   "build": {
     "appId": "io.github.goodlaith01.socialhub",
