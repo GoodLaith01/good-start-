@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+  <!-- Golden-hour valley: warm sky, sun low on the horizon, hazy ridges. -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7d8fa0"/>
+      <stop offset=".35" stop-color="#b9b3ad"/>
+      <stop offset=".58" stop-color="#e8c9a2"/>
+      <stop offset=".7" stop-color="#f4d4a6"/>
+      <stop offset="1" stop-color="#c79a74"/>
+    </linearGradient>
+    <radialGradient id="sun" cx=".62" cy=".6" r=".45">
+      <stop offset="0" stop-color="#fff3d6" stop-opacity=".95"/>
+      <stop offset=".12" stop-color="#ffe2b0" stop-opacity=".7"/>
+      <stop offset=".5" stop-color="#f6c58f" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#f6c58f" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="haze" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f3d8b4" stop-opacity="0"/>
+      <stop offset="1" stop-color="#f3d8b4" stop-opacity=".55"/>
+    </linearGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="6"/></filter>
+    <filter id="softer"><feGaussianBlur stdDeviation="2.5"/></filter>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#sky)"/>
+  <rect width="1600" height="1000" fill="url(#sun)"/>
+  <g filter="url(#soft)" fill="#fff" opacity=".35">
+    <ellipse cx="300" cy="230" rx="260" ry="26"/>
+    <ellipse cx="1180" cy="170" rx="320" ry="22"/>
+    <ellipse cx="820" cy="320" rx="220" ry="16"/>
+  </g>
+  <path filter="url(#softer)" fill="#a99a92" opacity=".75" d="M0 600 L120 560 L240 585 L380 520 L520 570 L640 530 L760 575 L900 540 L1040 580 L1180 520 L1320 560 L1460 530 L1600 565 V1000 H0Z"/>
+  <path filter="url(#softer)" fill="#8b7f7e" opacity=".85" d="M0 650 L160 600 L300 640 L450 590 L600 650 L760 610 L900 660 L1060 600 L1220 650 L1380 605 L1600 645 V1000 H0Z"/>
+  <rect y="560" width="1600" height="200" fill="url(#haze)"/>
+  <path fill="#6d6060" d="M0 720 L140 670 L280 705 L430 655 L590 715 L730 680 L880 730 L1040 670 L1200 720 L1360 675 L1600 715 V1000 H0Z"/>
+  <path fill="#5d504a" d="M0 800 L180 750 L340 790 L520 740 L700 800 L880 770 L1060 820 L1240 760 L1420 805 L1600 770 V1000 H0Z"/>
+  <path fill="#43372f" d="M0 880 L220 845 L460 875 L700 840 L940 885 L1180 850 L1400 880 L1600 850 V1000 H0Z"/>
+</svg>

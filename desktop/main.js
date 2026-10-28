@@ -47,12 +47,13 @@ const SITES = {
 const KEYS = Object.keys(SITES);
 
 // Layout sizes in pixels, shared with the window's toolbar (ui/ui.js).
-const SIZES = { toolbar: 56, head: 42, headGap: 6, gap: 10, radius: 14 };
+// `rail` is the glass column of buttons down the left side.
+const SIZES = { toolbar: 60, rail: 64, head: 44, headGap: 8, gap: 12, radius: 18 };
 
 // Window colors per theme, so the title bar and first paint match the page.
 const THEME_COLORS = {
-  day: { bg: "#0f3b2a", bar: "#164a34", symbol: "#f6fff4" },
-  night: { bg: "#050b1c", bar: "#0b1530", symbol: "#f1f4ff" },
+  day: { bg: "#6f6a66", bar: "#2a2420", symbol: "#fff8ef" },
+  night: { bg: "#0d1430", bar: "#0b1022", symbol: "#eef2ff" },
 };
 
 // Sign-in pages a site may open in a pop-up (e.g. "Log in with Apple").
@@ -580,13 +581,13 @@ function retry(key) {
 function paneRects(W, H) {
   const shown = shownKeys();
   const n = shown.length;
-  const { toolbar, head, headGap, gap } = SIZES;
-  const room = W - gap * (n + 1);
+  const { toolbar, rail, head, headGap, gap } = SIZES;
+  const room = W - rail - gap * (n + 1);
   const total = shown.reduce((sum, key) => sum + (n > 1 ? state.widths[key] : 1), 0);
   const top = toolbar + gap;
   const bodyTop = top + head + headGap;
   const rects = {};
-  let x = gap;
+  let x = rail + gap;
   shown.forEach((key, i) => {
     // The last column takes any leftover pixels.
     const width = i === n - 1 ? W - gap - x : Math.floor((room * (n > 1 ? state.widths[key] : 1)) / total);
