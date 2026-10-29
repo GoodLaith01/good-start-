@@ -155,6 +155,7 @@ function render(state) {
   $("#google-steps").hidden = yt;
   $("#google-title").textContent = yt ? "Watch without signing in" : "Use another way to sign in";
   $("#google-login").textContent = yt ? "Keep watching here" : `Go to ${googleName} login`;
+  $("#google-browser").textContent = yt ? "Watch YouTube in Chrome instead" : `Use ${googleName} in my browser instead`;
   showOverlay("google", state.overlay === "google");
   renderSettings(state);
 

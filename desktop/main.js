@@ -12,6 +12,7 @@ const {
 } = require("electron");
 const fs = require("fs");
 const path = require("path");
+const { spawn } = require("child_process");
 const { ElectronBlocker } = require("@ghostery/adblocker-electron");
 
 const SITES = {
@@ -902,6 +903,11 @@ function paneAction(key, action) {
     case "open-external":
       if (/^https?:\/\//.test(wc.getURL())) shell.openExternal(wc.getURL());
       break;
+    case "open-chrome":
+      openInChrome(hostMatches(wc.getURL(), SITES[key].hosts) ? wc.getURL() : SITES[key].home);
+      // The video carries on in Chrome, so stop it here.
+      wc.executeJavaScript(`document.querySelectorAll("video").forEach((v) => v.pause())`).catch(() => {});
+      break;
     case "copy-link":
       if (/^https?:\/\//.test(wc.getURL())) {
         clipboard.writeText(wc.getURL());
@@ -924,6 +930,38 @@ function paneAction(key, action) {
     case "saved":
       openSaved(key);
       break;
+  }
+}
+
+// ---------- Google Chrome ----------
+
+// Chrome on this computer, if it's installed in one of the usual places.
+function findChrome() {
+  const env = process.env;
+  const places = {
+    win32: [env.PROGRAMFILES, env["PROGRAMFILES(X86)"], env.LOCALAPPDATA]
+      .filter(Boolean)
+      .map((dir) => path.join(dir, "Google", "Chrome", "Application", "chrome.exe")),
+    darwin: ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"],
+    linux: ["/usr/bin/google-chrome", "/usr/bin/google-chrome-stable", "/usr/bin/chromium"],
+  }[process.platform] || [];
+  return places.find((file) => fs.existsSync(file));
+}
+
+// Opens a page in your own Chrome, with your Google account and your
+// extensions (such as an ad blocker). Without Chrome, your normal browser.
+function openInChrome(url) {
+  const chrome = findChrome();
+  if (!chrome) {
+    shell.openExternal(url);
+    toast("Chrome isn't installed, so it opened in your browser");
+    return;
+  }
+  try {
+    spawn(chrome, ["--new-window", url], { detached: true, stdio: "ignore" }).unref();
+    toast("Opened in Chrome");
+  } catch {
+    shell.openExternal(url);
   }
 }
 
@@ -992,6 +1030,7 @@ function showPaneMenu(key) {
   Menu.buildFromTemplate([
     { label: `Your ${SAVED[key].label.toLowerCase()}`, click: () => paneAction(key, "saved") },
     { label: "Play video full screen", click: () => paneAction(key, "video-fullscreen") },
+    ...(key === "youtube" ? [{ label: "Watch in Chrome (with your extensions)", click: () => paneAction(key, "open-chrome") }] : []),
     { type: "separator" },
     { label: "Zoom in", accelerator: "CmdOrCtrl+=", enabled: z < 1.5, click: () => paneAction(key, "zoom-in") },
     { label: "Zoom out", accelerator: "CmdOrCtrl+-", enabled: z > 0.5, click: () => paneAction(key, "zoom-out") },
@@ -1146,7 +1185,8 @@ ipcMain.on("google-help", (_e, action) => {
     else paneAction(key, "connect");
   }
   if (action === "browser") {
-    shell.openExternal(key === "youtube" ? SITES.youtube.home : SITES[key].login);
+    if (key === "youtube") openInChrome(SITES.youtube.home);
+    else shell.openExternal(SITES[key].login);
     setOverlay(null);
   }
 });
